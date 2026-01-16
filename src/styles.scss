@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== Base ===== */
+html, body {
+  height: 100%;
+}
+body {
+  @apply bg-white text-[#2E2E2E];
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+    "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+/* ===== Typography ===== */
+.h1 {
+  @apply font-extrabold text-[#2E2E2E];
+}
+.h2 {
+  @apply font-extrabold text-[#2E2E2E];
+}
+
+/* ===== Card / Buttons ===== */
+.card {
+  @apply rounded-3xl border border-gray-200
+         shadow-[0_14px_40px_-18px_rgba(0,0,0,0.25)];
+}
+
+.btn-primary {
+  @apply bg-[#FF5A5F] text-white font-extrabold
+         border border-[#FF5A5F]
+         shadow-[0_14px_40px_-22px_rgba(255,90,95,0.65)]
+         hover:brightness-[0.98] active:scale-[0.99]
+         transition;
+}
+
+.btn-ghost {
+  @apply bg-white text-[#2E2E2E] font-bold
+         border border-gray-300
+         rounded-full
+         hover:bg-gray-50 active:scale-[0.99]
+         transition;
+}
+
+/* ===== Icon button ===== */
+.icon-btn {
+  @apply w-10 h-10 rounded-full border border-gray-300 bg-white
+         flex items-center justify-center
+         hover:bg-gray-50 active:scale-[0.98] transition;
+}
+.icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ===== Scrollbar helper ===== */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
