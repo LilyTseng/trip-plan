@@ -169,7 +169,12 @@ export class TripService {
   /* ── Getters ── */
   get activeTrip(): Trip { return this.trips.find(t => t.id === this.activeTripId) ?? this.trips[0]; }
   get itin(): Record<string, ItinEvent[]> { return this.activeTrip.itin; }
-  get dates(): string[] { return Object.keys(this.activeTrip.itin); }
+  get dates(): string[] {
+    return Object.keys(this.activeTrip.itin).sort((a, b) => {
+      const parse = (k: string) => { const m = k.match(/^(\d+)\/(\d+)/); return m ? +m[1] * 100 + +m[2] : 0; };
+      return parse(a) - parse(b);
+    });
+  }
 
   /* ── Trip CRUD ── */
   switchTrip(id: string): void {
