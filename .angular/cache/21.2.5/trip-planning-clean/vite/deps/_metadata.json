@@ -1,49 +1,67 @@
 {
-  "hash": "defa294e",
-  "configHash": "3a0c13c3",
-  "lockfileHash": "0fa05c95",
-  "browserHash": "a619c9be",
+  "hash": "5458f45e",
+  "configHash": "c1d68681",
+  "lockfileHash": "9cebdcd3",
+  "browserHash": "4d1dd135",
   "optimized": {
     "@angular/common": {
       "src": "../../../../../../node_modules/@angular/common/fesm2022/common.mjs",
       "file": "@angular_common.js",
-      "fileHash": "540813b5",
+      "fileHash": "f216136c",
       "needsInterop": false
     },
     "@angular/core": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
       "file": "@angular_core.js",
-      "fileHash": "1b11f4c9",
+      "fileHash": "301f848d",
       "needsInterop": false
     },
     "@angular/forms": {
       "src": "../../../../../../node_modules/@angular/forms/fesm2022/forms.mjs",
       "file": "@angular_forms.js",
-      "fileHash": "5d0e4f52",
+      "fileHash": "99d57a17",
       "needsInterop": false
     },
     "@angular/platform-browser": {
       "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
       "file": "@angular_platform-browser.js",
-      "fileHash": "13e8633c",
+      "fileHash": "af26885f",
       "needsInterop": false
     },
     "@angular/router": {
       "src": "../../../../../../node_modules/@angular/router/fesm2022/router.mjs",
       "file": "@angular_router.js",
-      "fileHash": "4b589a2a",
+      "fileHash": "dbe20136",
+      "needsInterop": false
+    },
+    "firebase/firestore": {
+      "src": "../../../../../../node_modules/firebase/firestore/dist/esm/index.esm.js",
+      "file": "firebase_firestore.js",
+      "fileHash": "946b9dc4",
+      "needsInterop": false
+    },
+    "firebase/app": {
+      "src": "../../../../../../node_modules/firebase/app/dist/esm/index.esm.js",
+      "file": "firebase_app.js",
+      "fileHash": "a2d75beb",
       "needsInterop": false
     }
   },
   "chunks": {
-    "chunk-R34OEOY5": {
-      "file": "chunk-R34OEOY5.js"
+    "chunk-R34N625B": {
+      "file": "chunk-R34N625B.js"
     },
-    "chunk-LF46MHB3": {
-      "file": "chunk-LF46MHB3.js"
+    "chunk-54I5GACL": {
+      "file": "chunk-54I5GACL.js"
     },
-    "chunk-IUBWJNQB": {
-      "file": "chunk-IUBWJNQB.js"
+    "chunk-QH45LEA2": {
+      "file": "chunk-QH45LEA2.js"
+    },
+    "chunk-ODZGA67P": {
+      "file": "chunk-ODZGA67P.js"
+    },
+    "chunk-GOMI4DH3": {
+      "file": "chunk-GOMI4DH3.js"
     }
   }
 }

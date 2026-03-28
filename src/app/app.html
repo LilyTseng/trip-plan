@@ -93,67 +93,21 @@
         </button>
       </div>
 
-      <!-- Room code / collaborative -->
-      <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-4">
-        <div class="text-[10px] uppercase tracking-widest text-gray-400">協同編輯</div>
-
-        <!-- Current room code -->
-        <div>
-          <div class="text-xs text-gray-400 mb-2">分享這個碼給朋友，即可即時同步</div>
-          <div class="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3 border border-gray-100">
-            <span class="flex-1 text-2xl font-mono font-extrabold tracking-[0.3em] text-[#FF5A5F]">
-              {{ tripSvc.roomCode }}
-            </span>
-            <button (click)="copyRoomCode()"
-              class="icon-btn shrink-0" aria-label="複製分享碼">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-              </svg>
-            </button>
+      <!-- Sync status -->
+      <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+        <div class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">雲端同步</div>
+        <div class="flex items-center gap-3">
+          <div class="w-3 h-3 rounded-full shrink-0"
+            [class.bg-green-400]="tripSvc.syncStatus === 'synced'"
+            [class.bg-yellow-400]="tripSvc.syncStatus === 'syncing'"
+            [class.bg-gray-300]="tripSvc.syncStatus === 'offline'">
           </div>
-          <div class="flex items-center gap-1.5 mt-2">
-            <div class="w-2 h-2 rounded-full"
-              [class.bg-green-400]="tripSvc.syncStatus === 'synced'"
-              [class.bg-yellow-400]="tripSvc.syncStatus === 'syncing'"
-              [class.bg-gray-300]="tripSvc.syncStatus === 'offline'">
+          <div>
+            <div class="text-sm font-bold text-[#1A1A1A]">
+              {{ tripSvc.syncStatus === 'synced' ? '已同步至雲端' : tripSvc.syncStatus === 'syncing' ? '同步中...' : '離線' }}
             </div>
-            <span class="text-xs text-gray-400">
-              {{ tripSvc.syncStatus === 'synced' ? '雲端已同步' : tripSvc.syncStatus === 'syncing' ? '同步中...' : '離線' }}
-            </span>
+            <div class="text-xs text-gray-400 mt-0.5">所有成員即時共享同一份資料</div>
           </div>
-        </div>
-
-        <div class="border-t border-gray-100"></div>
-
-        <!-- Join room -->
-        <div>
-          <div class="text-xs font-bold text-[#1A1A1A] mb-2">加入朋友的行程</div>
-          <div class="flex gap-2">
-            <input
-              class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-center font-mono font-extrabold tracking-[0.2em] uppercase text-sm outline-none focus:border-[#FF5A5F]"
-              placeholder="輸入 6 碼"
-              [(ngModel)]="joinCodeInput"
-              maxlength="6"
-              (keyup.enter)="joinRoom()"
-            />
-            <button class="btn-primary px-5 py-3 rounded-xl text-sm font-bold"
-              [class.opacity-50]="joinState === 'loading'"
-              (click)="joinRoom()">
-              {{ joinState === 'loading' ? '...' : '加入' }}
-            </button>
-          </div>
-          <div *ngIf="joinState === 'error'"   class="text-xs text-red-400 mt-2">❌ 找不到此分享碼</div>
-          <div *ngIf="joinState === 'success'" class="text-xs text-green-500 mt-2">✅ 已加入！正在同步...</div>
-        </div>
-
-        <div class="border-t border-gray-100"></div>
-
-        <!-- Create new room -->
-        <div>
-          <div class="text-xs text-gray-400 mb-2">建立全新的獨立行程空間</div>
-          <button (click)="createNewRoom()" class="btn-ghost w-full py-3 rounded-xl text-sm">
-            + 建立新的協同空間
-          </button>
         </div>
       </div>
 

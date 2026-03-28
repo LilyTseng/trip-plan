@@ -1,6 +1,5 @@
 import { Component, inject } from '@angular/core';
 import { NgIf } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { ChecklistItem, ItinEvent, SheetContext, Tab } from './models/types';
 import { TripService } from './services/trip.service';
 import { ItineraryComponent } from './components/itinerary/itinerary.component';
@@ -13,7 +12,7 @@ import { SplitComponent } from './components/split/split.component';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [NgIf, FormsModule, ItineraryComponent, ChecklistComponent, LedgerComponent, BottomSheetComponent, TripManagerComponent, SplitComponent],
+  imports: [NgIf, ItineraryComponent, ChecklistComponent, LedgerComponent, BottomSheetComponent, TripManagerComponent, SplitComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
@@ -104,24 +103,4 @@ export class AppComponent {
     this.activeTab = 'itinerary';
   }
 
-  /* ── Cloud sync UI ── */
-  joinCodeInput = '';
-  joinState: 'idle' | 'loading' | 'error' | 'success' = 'idle';
-
-  copyRoomCode(): void {
-    navigator.clipboard.writeText(this.tripSvc.roomCode).catch(() => {});
-  }
-
-  async joinRoom(): Promise<void> {
-    if (!this.joinCodeInput.trim()) return;
-    this.joinState = 'loading';
-    const ok = await this.tripSvc.joinRoom(this.joinCodeInput);
-    this.joinState = ok ? 'success' : 'error';
-    if (ok) { this.joinCodeInput = ''; this.activeTab = 'itinerary'; }
-    setTimeout(() => { if (this.joinState !== 'loading') this.joinState = 'idle'; }, 3000);
-  }
-
-  async createNewRoom(): Promise<void> {
-    await this.tripSvc.createNewRoom();
-  }
 }

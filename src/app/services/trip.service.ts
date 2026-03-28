@@ -1,10 +1,10 @@
 import { Injectable, NgZone, inject } from '@angular/core';
-import { doc, getDoc, setDoc, onSnapshot, Unsubscribe } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { db } from '../firebase.config';
 import { ChecklistItem, EventType, ItinEvent, Member, Settlement, SplitExpense, Trip } from '../models/types';
 
-const LOCAL_KEY = 'trip_plan_v1';
-const ROOM_KEY  = 'room_code';
+const LOCAL_KEY  = 'trip_plan_v1';
+const FIRESTORE_DOC = 'main'; // 所有人共用同一份文件
 
 interface StoredState {
   trips: Trip[];
@@ -37,7 +37,6 @@ export class TripService {
   gifts: ChecklistItem[] = [];
 
   /* ── Cloud sync ── */
-  roomCode = '';
   syncStatus: SyncStatus = 'offline';
   private unsubFirestore: Unsubscribe | null = null;
   private saveTimer: ReturnType<typeof setTimeout> | null = null;
@@ -53,49 +52,13 @@ export class TripService {
     } else {
       this.initDefaults();
     }
-
-    const savedCode = localStorage.getItem(ROOM_KEY);
-    if (savedCode) {
-      this.roomCode = savedCode;
-      this.connectRoom(savedCode);
-    } else {
-      this.createNewRoom();
-    }
+    this.connectFirestore();
   }
 
-  /* ── Room management ── */
-  async createNewRoom(): Promise<string> {
-    const code = this.generateRoomCode();
-    this.roomCode = code;
-    localStorage.setItem(ROOM_KEY, code);
-    await this.pushToFirestore();
-    this.connectRoom(code);
-    return code;
-  }
-
-  async joinRoom(code: string): Promise<boolean> {
-    const upper = code.trim().toUpperCase();
-    try {
-      const snap = await getDoc(doc(db, 'rooms', upper));
-      if (!snap.exists()) return false;
-      const data = snap.data() as RoomData;
-      this.unsubFirestore?.();
-      this.applyRemoteData(data);
-      this.roomCode = upper;
-      localStorage.setItem(ROOM_KEY, upper);
-      this.saveLocal();
-      this.connectRoom(upper);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  private connectRoom(code: string): void {
-    this.unsubFirestore?.();
+  private connectFirestore(): void {
     this.syncStatus = 'syncing';
     this.unsubFirestore = onSnapshot(
-      doc(db, 'rooms', code),
+      doc(db, 'rooms', FIRESTORE_DOC),
       (snap) => {
         if (snap.metadata.hasPendingWrites) return;
         if (!snap.exists()) { this.pushToFirestore(); return; }
@@ -109,6 +72,17 @@ export class TripService {
     );
   }
 
+  private async pushToFirestore(): Promise<void> {
+    this.syncStatus = 'syncing';
+    try {
+      await setDoc(doc(db, 'rooms', FIRESTORE_DOC), {
+        trips: this.trips, packing: this.packing,
+        gifts: this.gifts, updatedAt: Date.now(),
+      });
+      this.syncStatus = 'synced';
+    } catch { this.syncStatus = 'offline'; }
+  }
+
   private applyRemoteData(data: RoomData): void {
     this.trips   = data.trips   ?? this.trips;
     this.packing = data.packing ?? this.packing;
@@ -117,27 +91,6 @@ export class TripService {
       this.activeTripId = this.trips[0]?.id ?? '';
       this.activeDate   = Object.keys(this.trips[0]?.itin ?? {})[0] ?? '';
     }
-  }
-
-  private async pushToFirestore(): Promise<void> {
-    if (!this.roomCode) return;
-    this.syncStatus = 'syncing';
-    try {
-      await setDoc(doc(db, 'rooms', this.roomCode), {
-        trips:     this.trips,
-        packing:   this.packing,
-        gifts:     this.gifts,
-        updatedAt: Date.now(),
-      });
-      this.syncStatus = 'synced';
-    } catch {
-      this.syncStatus = 'offline';
-    }
-  }
-
-  private generateRoomCode(): string {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
   }
 
   /* ── Persistence ── */
