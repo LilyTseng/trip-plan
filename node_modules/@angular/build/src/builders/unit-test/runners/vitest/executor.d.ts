@@ -17,9 +17,11 @@ export declare class VitestExecutor implements TestExecutor {
     private readonly logger;
     private readonly buildResultFiles;
     private readonly externalMetadata;
+    private readonly debugLevel;
     private readonly testFileToEntryPoint;
     private readonly entryPointToTestFile;
     constructor(projectName: string, options: NormalizedUnitTestBuilderOptions, testEntryPointMappings: Map<string, string> | undefined, logger: BuilderContext['logger']);
+    private debugLog;
     execute(buildResult: FullResult | IncrementalResult): AsyncIterable<BuilderOutput>;
     [Symbol.asyncDispose](): Promise<void>;
     private prepareSetupFiles;

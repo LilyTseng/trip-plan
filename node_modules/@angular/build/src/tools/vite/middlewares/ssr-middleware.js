@@ -85,6 +85,9 @@ async function createAngularSsrExternalMiddleware(server, indexHtmlTransformer) 
     // which must be processed by the runtime linker, even if they are not used.
     await Promise.resolve().then(() => __importStar(require('@angular/compiler')));
     const { createWebRequestFromNodeRequest, writeResponseToNodeResponse } = (await Promise.resolve(`${'@angular/ssr/node'}`).then(s => __importStar(require(s))));
+    // Disable host check if allowed hosts is true meaning allow all hosts.
+    const { allowedHosts } = server.config.server;
+    const disableAllowedHostsCheck = allowedHosts === true;
     return function angularSsrExternalMiddleware(req, res, next) {
         (async () => {
             const { reqHandler, AngularAppEngine } = (await server.ssrLoadModule('./server.mjs'));
@@ -100,6 +103,7 @@ async function createAngularSsrExternalMiddleware(server, indexHtmlTransformer) 
                 return;
             }
             if (cachedAngularAppEngine !== AngularAppEngine) {
+                AngularAppEngine.ɵdisableAllowedHostsCheck = disableAllowedHostsCheck;
                 AngularAppEngine.ɵallowStaticRouteRender = true;
                 AngularAppEngine.ɵhooks.on('html:transform:pre', async ({ html, url }) => {
                     const processedHtml = await server.transformIndexHtml(url.pathname, html);

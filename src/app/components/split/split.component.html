@@ -1,0 +1,267 @@
+<div class="space-y-6 mt-6">
+
+  <!-- 成員列 -->
+  <div>
+    <div class="text-sm font-bold text-[#2E2E2E] mb-3">旅伴</div>
+    <div class="flex flex-wrap gap-2 items-center">
+      <div
+        *ngFor="let m of members"
+        class="flex items-center gap-1 bg-[#FF5A5F]/10 border border-[#FF5A5F]/30 text-[#FF5A5F] text-sm font-bold rounded-full px-3 py-1.5"
+      >
+        <span>{{ m.name }}</span>
+        <button
+          class="ml-1 w-5 h-5 rounded-full flex items-center justify-center hover:bg-[#FF5A5F]/20 transition text-xs leading-none"
+          aria-label="移除旅伴"
+          (click)="deleteMember(m.id)"
+        >×</button>
+      </div>
+
+      <div class="flex items-center gap-1">
+        <input
+          class="card bg-white px-3 py-1.5 text-sm w-28 rounded-full"
+          placeholder="新增旅伴"
+          [(ngModel)]="newMemberName"
+          (keydown.enter)="addMember()"
+        />
+        <button class="icon-btn w-8 h-8" aria-label="新增旅伴" (click)="addMember()">
+          <span class="text-base font-bold leading-none">+</span>
+        </button>
+      </div>
+    </div>
+    <div *ngIf="members.length === 0" class="text-xs opacity-50 mt-2">先新增旅伴，才能記錄分帳</div>
+  </div>
+
+  <!-- Sub-nav pills -->
+  <div class="flex gap-2">
+    <button
+      class="px-4 py-2 rounded-full text-sm font-bold border transition"
+      [style.background]="activeView === 'expenses' ? '#FF5A5F' : 'white'"
+      [style.color]="activeView === 'expenses' ? 'white' : '#2E2E2E'"
+      [style.borderColor]="activeView === 'expenses' ? '#FF5A5F' : '#d1d5db'"
+      (click)="activeView = 'expenses'"
+    >費用</button>
+    <button
+      class="px-4 py-2 rounded-full text-sm font-bold border transition"
+      [style.background]="activeView === 'settlement' ? '#FF5A5F' : 'white'"
+      [style.color]="activeView === 'settlement' ? 'white' : '#2E2E2E'"
+      [style.borderColor]="activeView === 'settlement' ? '#FF5A5F' : '#d1d5db'"
+      (click)="activeView = 'settlement'"
+    >結算</button>
+  </div>
+
+  <!-- ── 費用 VIEW ── -->
+  <div *ngIf="activeView === 'expenses'" class="space-y-3">
+    <button
+      class="w-full btn-primary py-3 rounded-full font-extrabold transition"
+      [style.opacity]="members.length < 2 ? '0.4' : '1'"
+      [disabled]="members.length < 2"
+      (click)="openAddExpense()"
+    >+ 新增費用</button>
+
+    <div *ngIf="members.length < 2 && members.length > 0" class="text-xs opacity-50 text-center">
+      需要至少 2 位旅伴才能新增費用
+    </div>
+
+    <div *ngIf="expenses.length === 0" class="text-sm opacity-60">還沒有分帳紀錄</div>
+
+    <div class="card bg-white p-4 space-y-1.5" *ngFor="let exp of expenses">
+      <div class="flex justify-between items-start gap-3">
+        <div class="font-extrabold text-[#2E2E2E] flex-1">{{ exp.description }}</div>
+        <div class="text-right shrink-0">
+          <div class="text-lg font-extrabold text-[#FF5A5F]">{{ formatAmount(exp) }}</div>
+          <div *ngIf="exp.currency !== 'TWD'" class="text-xs opacity-50">
+            1 {{ exp.currency }} = NT${{ exp.exchangeRate }}
+          </div>
+        </div>
+      </div>
+      <div class="text-xs opacity-60">
+        {{ getMemberName(exp.paidBy) }} 付款 · {{ exp.date }}
+      </div>
+      <div class="text-xs opacity-60">
+        分攤：{{ getSplitWithNames(exp) }}（每人約 NT${{ getPerPersonShare(exp) }}）
+      </div>
+      <!-- 編輯 / 刪除 按鈕 -->
+      <div class="flex justify-end gap-2 mt-1">
+        <button class="icon-btn" aria-label="編輯" (click)="openEditExpense(exp)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+          </svg>
+        </button>
+        <button class="icon-btn" aria-label="刪除" (click)="deleteExpense(exp.id)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18"></path><path d="M8 6V4h8v2"></path>
+            <path d="M19 6l-1 14H6L5 6"></path>
+            <path d="M10 11v6"></path><path d="M14 11v6"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 結算 VIEW ── -->
+  <div *ngIf="activeView === 'settlement'" class="space-y-3">
+    <div *ngIf="members.length < 2" class="text-sm opacity-60">
+      需要至少 2 位旅伴才能結算
+    </div>
+
+    <div *ngIf="members.length >= 2 && settlements.length === 0"
+         class="card bg-white p-8 text-center">
+      <div class="text-4xl mb-3">🎉</div>
+      <div class="font-extrabold text-xl text-[#2E2E2E]">都平了！</div>
+      <div class="text-xs opacity-60 mt-1">大家都沒有欠款</div>
+    </div>
+
+    <div
+      *ngFor="let s of settlements"
+      class="card p-4 flex items-center gap-4 transition"
+      [style.opacity]="isSettled(s.from, s.to) ? '0.45' : '1'"
+      [style.background]="isSettled(s.from, s.to) ? '#f9fafb' : 'white'"
+    >
+      <!-- 勾選框 -->
+      <input
+        type="checkbox"
+        class="w-6 h-6 accent-[#FF5A5F] shrink-0 cursor-pointer"
+        [checked]="isSettled(s.from, s.to)"
+        (change)="toggleSettled(s.from, s.to)"
+      />
+
+      <!-- 欠款說明 -->
+      <div class="flex-1 min-w-0">
+        <div [style.textDecoration]="isSettled(s.from, s.to) ? 'line-through' : 'none'">
+          <span class="font-extrabold text-[#2E2E2E]">{{ getMemberName(s.from) }}</span>
+          <span class="text-[#FF5A5F] font-bold mx-1">欠</span>
+          <span class="font-extrabold text-[#2E2E2E]">{{ getMemberName(s.to) }}</span>
+        </div>
+        <div *ngIf="isSettled(s.from, s.to)" class="text-xs text-green-600 font-bold mt-0.5">
+          ✓ 已結清
+        </div>
+      </div>
+
+      <!-- 金額 -->
+      <div
+        class="text-xl font-extrabold shrink-0"
+        [style.color]="isSettled(s.from, s.to) ? '#9ca3af' : '#FF5A5F'"
+        [style.textDecoration]="isSettled(s.from, s.to) ? 'line-through' : 'none'"
+      >NT${{ s.amount }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 費用 Modal（新增 / 編輯共用） ── -->
+<div *ngIf="expenseModalOpen" class="fixed inset-0 z-[80] flex items-end sm:items-center justify-center">
+  <div class="absolute inset-0 bg-black/35" (click)="closeExpenseModal()"></div>
+
+  <div
+    class="relative w-full max-w-md mx-auto rounded-t-3xl sm:rounded-3xl bg-white shadow-[0_30px_90px_-35px_rgba(0,0,0,0.55)] border border-gray-200 p-5 sm:p-6 max-h-[90vh] overflow-y-auto"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="flex items-start justify-between">
+      <div>
+        <div class="text-xs uppercase tracking-widest opacity-60">Split</div>
+        <div class="text-2xl h2 mt-1">{{ isEditing ? '編輯費用' : '新增費用' }}</div>
+      </div>
+      <button class="btn-ghost px-3 py-2 text-sm" (click)="closeExpenseModal()">關閉</button>
+    </div>
+
+    <div class="mt-5 space-y-4">
+
+      <!-- 描述 -->
+      <div>
+        <div class="text-sm font-bold text-[#2E2E2E] mb-1">費用描述</div>
+        <input class="card bg-white w-full px-4 py-3"
+          placeholder="例如：晚餐 / 計程車 / 門票"
+          [(ngModel)]="formDesc" />
+      </div>
+
+      <!-- 幣別 + 金額 -->
+      <div>
+        <div class="text-sm font-bold text-[#2E2E2E] mb-1">幣別 & 金額</div>
+        <div class="flex gap-2">
+          <select class="card bg-white px-3 py-3 text-sm font-bold w-28 shrink-0"
+            [(ngModel)]="formCurrency" (ngModelChange)="onCurrencyChange()">
+            <option *ngFor="let c of fx.currencies" [value]="c">
+              {{ fx.symbolOf(c) }} {{ c }}
+            </option>
+          </select>
+          <input class="card bg-white flex-1 px-4 py-3"
+            type="number" min="1" placeholder="0"
+            [(ngModel)]="formAmount" />
+        </div>
+
+        <!-- 匯率編輯 & TWD 預覽 -->
+        <div *ngIf="formCurrency !== 'TWD'" class="mt-2 space-y-2">
+          <!-- 載入中 -->
+          <div *ngIf="fx.isLoading" class="text-xs opacity-50">⏳ 正在取得最新匯率...</div>
+
+          <!-- 預設匯率提示 -->
+          <div *ngIf="!fx.isLoading && fx.usingDefaults"
+               class="card bg-amber-50 border-amber-200 px-3 py-2 text-xs text-amber-700">
+            ⚠️ 使用預設匯率（無法取得即時資料），可手動調整
+          </div>
+
+          <!-- 可編輯匯率 -->
+          <div>
+            <div class="text-xs font-bold text-[#2E2E2E] mb-1">
+              匯率（1 {{ formCurrency }} = ? TWD）
+            </div>
+            <input
+              class="card bg-white w-full px-4 py-2.5 text-sm"
+              type="number" min="0.0001" step="0.0001"
+              [(ngModel)]="formRate"
+            />
+          </div>
+
+          <!-- TWD 預覽 -->
+          <div *ngIf="twdPreview > 0" class="card bg-[#FF5A5F]/5 px-4 py-2 text-sm">
+            <span class="opacity-60">≈ </span>
+            <span class="font-extrabold text-[#FF5A5F]">NT${{ twdPreview.toLocaleString() }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 付款人 -->
+      <div>
+        <div class="text-sm font-bold text-[#2E2E2E] mb-1">誰付款</div>
+        <select class="card bg-white w-full px-4 py-3" [(ngModel)]="formPaidBy">
+          <option *ngFor="let m of members" [value]="m.id">{{ m.name }}</option>
+        </select>
+      </div>
+
+      <!-- 分攤對象 -->
+      <div>
+        <div class="text-sm font-bold text-[#2E2E2E] mb-2">
+          分攤對象
+          <span class="text-xs opacity-50 font-normal ml-1">（可自由勾選）</span>
+        </div>
+        <div class="space-y-2">
+          <label *ngFor="let m of members"
+            class="flex items-center gap-3 card bg-white px-4 py-3 cursor-pointer hover:bg-gray-50 transition">
+            <input type="checkbox" class="w-5 h-5 accent-[#FF5A5F]"
+              [(ngModel)]="formSplitWith[m.id]" />
+            <span class="font-bold text-[#2E2E2E]">{{ m.name }}</span>
+            <span *ngIf="m.id === formPaidBy"
+              class="ml-auto text-xs px-2 py-0.5 rounded-full bg-[#FF5A5F]/10 text-[#FF5A5F] font-bold">付款人</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 日期 -->
+      <div>
+        <div class="text-sm font-bold text-[#2E2E2E] mb-1">日期</div>
+        <input class="card bg-white w-full px-4 py-3 text-sm"
+          type="date" [(ngModel)]="formDate" />
+      </div>
+
+      <!-- 送出 -->
+      <div class="flex gap-3 pt-2">
+        <button class="btn-ghost w-1/3 py-3" (click)="closeExpenseModal()">取消</button>
+        <button
+          class="btn-primary w-2/3 py-3 transition"
+          [style.opacity]="canSubmitExpense ? '1' : '0.5'"
+          (click)="submitExpense()"
+        >{{ isEditing ? '儲存' : '新增' }}</button>
+      </div>
+    </div>
+  </div>
+</div>

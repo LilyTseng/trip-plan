@@ -1,391 +1,176 @@
-<div class="min-h-screen p-6 max-w-2xl mx-auto pb-28 bg-white">
-  <!-- Header -->
-  <div class="flex items-center justify-between mt-2">
-    <div>
-      <div class="text-sm uppercase opacity-60 tracking-widest">Trip Planning</div>
-      <div class="text-3xl h1 tracking-tight">Tokyo Bound</div>
-    </div>
+<!-- ══════════════════════════════════════════
+     TRIP PLAN APP  — Funliday-style layout
+     ══════════════════════════════════════════ -->
+<div class="app-shell">
 
-    <div class="card bg-white px-3 py-2 text-xs">
-      <div class="font-bold text-[#2E2E2E]">JAN 23–27</div>
-      <div class="opacity-60">Shared Trip</div>
-    </div>
-  </div>
-
-  <!-- HOME -->
-  <div *ngIf="activeTab === 'home'" class="grid grid-cols-2 gap-6 mt-10">
-    <div
-      (click)="setTab('itinerary')"
-      class="col-span-2 card bg-[#FF5A5F] p-8 h-56 flex flex-col justify-between cursor-pointer text-white"
-    >
-      <div class="flex justify-between items-start">
-        <h1 class="text-5xl tracking-tight leading-tight font-extrabold">
-          Tokyo<br />Itinerary
+  <!-- ── TOP HEADER ── -->
+  <header class="app-header">
+    <div class="flex items-center justify-between">
+      <div class="min-w-0">
+        <div class="text-[10px] uppercase tracking-[0.25em] text-gray-400 mb-0.5">
+          {{ tripSvc.activeTrip.name }}
+        </div>
+        <h1 class="text-xl font-extrabold text-[#1A1A1A] leading-tight truncate">
+          {{ tripEnglishTitle }}
         </h1>
-        <span class="bg-white/15 text-white px-3 py-1 text-sm rounded-full border border-white/30">
-          JAN 23–27
-        </span>
+        <div class="text-xs text-gray-400 mt-0.5">✈️ {{ headerDateLabel }}</div>
       </div>
-      <p class="text-white/90 text-lg">✈️ 1/23 22:30 LANDING...</p>
-    </div>
-
-    <div (click)="setTab('ledger')" class="card bg-white p-5 flex flex-col items-center justify-center gap-2 cursor-pointer">
-      <div class="text-4xl">💰</div>
-      <span class="text-xl uppercase font-extrabold text-[#2E2E2E]">Ledger</span>
-      <span class="text-xs opacity-60">JPY → TWD</span>
-    </div>
-
-    <div (click)="setTab('packing')" class="card bg-white p-5 flex flex-col items-center justify-center gap-2 cursor-pointer border border-[#FF5A5F]/30">
-      <div class="text-4xl">🧳</div>
-      <span class="text-xl uppercase font-extrabold text-[#2E2E2E]">Packing</span>
-      <span class="text-xs opacity-60">Checklist</span>
-    </div>
-
-    <div (click)="setTab('gifts')" class="card bg-white p-5 flex flex-col items-center justify-center gap-2 cursor-pointer border border-[#FF5A5F]/30">
-      <div class="text-4xl">🎁</div>
-      <span class="text-xl uppercase font-extrabold text-[#2E2E2E]">Souvenir</span>
-      <span class="text-xs opacity-60">To buy</span>
-    </div>
-
-    <div class="card bg-gray-50 p-5 flex flex-col items-center justify-center gap-2">
-      <div class="text-4xl">🗺️</div>
-      <span class="text-xl uppercase font-extrabold text-[#2E2E2E]">Maps</span>
-      <span class="text-xs opacity-60">Links</span>
-    </div>
-  </div>
-
-  <!-- ITINERARY -->
-  <div *ngIf="activeTab === 'itinerary'" class="mt-8">
-    <div class="flex items-center justify-between">
-      <div class="text-2xl h2 uppercase">Itinerary</div>
-      <button class="btn-ghost px-4 py-2 text-sm" (click)="setTab('home')">← HOME</button>
-    </div>
-
-    <div class="flex overflow-x-auto pb-4 gap-3 no-scrollbar mt-5">
-      <button
-        *ngFor="let d of dates"
-        class="flex-shrink-0 px-5 py-2 btn-ghost text-sm"
-        [style.background]="d === activeDate ? '#FF5A5F' : 'white'"
-        [style.color]="d === activeDate ? 'white' : '#2E2E2E'"
-        [style.borderColor]="d === activeDate ? '#FF5A5F' : '#d1d5db'"
-        (click)="selectDate(d)"
-      >
-        {{ d }}
+      <button (click)="tripManagerOpen = true"
+        class="ml-3 shrink-0 w-10 h-10 rounded-full bg-gray-100 border border-gray-200
+               flex items-center justify-center text-gray-500 hover:bg-gray-200 transition">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="5" r="1.2" fill="currentColor" stroke="none"/>
+          <circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/>
+          <circle cx="12" cy="19" r="1.2" fill="currentColor" stroke="none"/>
+        </svg>
       </button>
     </div>
+  </header>
 
-    <div class="mt-6 space-y-4">
-      <div *ngFor="let e of activeEvents" class="card bg-white p-4">
-        <div class="flex items-start justify-between gap-4">
-          <div class="flex gap-3">
-            <div class="mt-2 w-3 h-3 rounded-full bg-[#FF5A5F] shrink-0"></div>
+  <!-- ── SCROLLABLE MAIN CONTENT ── -->
+  <main class="app-main">
 
-            <div>
-              <div class="text-xs uppercase tracking-widest opacity-60">{{ e.type }}</div>
-              <div class="text-xl font-extrabold text-[#2E2E2E] mt-1">
-                {{ e.time }} {{ e.title }}
-              </div>
-            </div>
+    <!-- ════ ITINERARY ════ -->
+    <div *ngIf="activeTab === 'itinerary'" class="px-4 pt-3 pb-4">
+      <app-itinerary (editEvent)="onEditItinEvent($event)"></app-itinerary>
+    </div>
+
+    <!-- ════ CHECKLIST ════ -->
+    <div *ngIf="activeTab === 'checklist'">
+      <!-- Sub-tab -->
+      <div class="bg-white border-b border-gray-100 px-4 pt-3 pb-0 flex gap-0">
+        <button (click)="checklistKind = 'packing'"
+          class="checklist-sub" [class.checklist-sub-active]="checklistKind === 'packing'">
+          🧳 行李清單
+        </button>
+        <button (click)="checklistKind = 'gift'"
+          class="checklist-sub" [class.checklist-sub-active]="checklistKind === 'gift'">
+          🎁 伴手禮
+        </button>
+      </div>
+      <div class="px-4 pt-4 pb-4">
+        <app-checklist *ngIf="checklistKind === 'packing'" kind="packing" (editItem)="onEditChecklistItem($event)"></app-checklist>
+        <app-checklist *ngIf="checklistKind === 'gift'" kind="gift" (editItem)="onEditChecklistItem($event)"></app-checklist>
+      </div>
+    </div>
+
+    <!-- ════ LEDGER ════ -->
+    <div *ngIf="activeTab === 'ledger'" class="px-4 pt-3 pb-4">
+      <app-ledger></app-ledger>
+    </div>
+
+    <!-- ════ SPLIT ════ -->
+    <div *ngIf="activeTab === 'split'" class="px-4 pt-3 pb-4">
+      <app-split></app-split>
+    </div>
+
+    <!-- ════ MORE / SETTINGS ════ -->
+    <div *ngIf="activeTab === 'more'" class="px-4 pt-5 pb-4 space-y-4">
+      <!-- Current trip card -->
+      <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+        <div class="text-[10px] uppercase tracking-widest text-gray-400 mb-2">目前旅遊</div>
+        <div class="hero-card rounded-2xl p-5 text-white">
+          <div class="text-[10px] uppercase tracking-[0.2em] text-white/60 mb-1">
+            {{ tripSvc.activeTrip.name }}
           </div>
+          <div class="text-2xl font-extrabold">{{ tripEnglishTitle }}</div>
+          <div class="text-sm text-white/80 mt-2">✈️ {{ headerDateLabel }}</div>
+        </div>
+        <button (click)="tripManagerOpen = true"
+          class="btn-primary w-full mt-4 py-3 rounded-2xl font-bold text-sm">
+          管理旅遊
+        </button>
+      </div>
 
-          <div class="flex items-center gap-2">
-            <a
-              *ngIf="e.url"
-              class="btn-ghost px-3 py-2 text-xs whitespace-nowrap"
-              [href]="e.url"
-              target="_blank"
-              rel="noreferrer"
-            >
-              MAP ↗
-            </a>
-
-            <!-- ONLY show when mode is edit -->
-            <button *ngIf="actionMode === 'edit'" class="icon-btn" aria-label="Edit" (click)="openEditItinerary(e)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 20h9"></path>
-                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
-              </svg>
-            </button>
-
-            <!-- ONLY show when mode is delete -->
-            <button *ngIf="actionMode === 'delete'" class="icon-btn" aria-label="Delete" (click)="deleteItinEvent(activeDate, e.id)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 6h18"></path>
-                <path d="M8 6V4h8v2"></path>
-                <path d="M19 6l-1 14H6L5 6"></path>
-                <path d="M10 11v6"></path>
-                <path d="M14 11v6"></path>
-              </svg>
-            </button>
-          </div>
+      <!-- App info -->
+      <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-3">
+        <div class="text-[10px] uppercase tracking-widest text-gray-400 mb-2">App Info</div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-500">版本</span>
+          <span class="font-bold text-[#1A1A1A]">1.0.0</span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-500">資料儲存</span>
+          <span class="font-bold text-[#1A1A1A]">本機 (localStorage)</span>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- PACKING -->
-  <div *ngIf="activeTab === 'packing'" class="mt-8 space-y-4">
-    <div class="flex items-center justify-between">
-      <div class="text-2xl h2 uppercase">Packing</div>
-      <button class="btn-ghost px-4 py-2 text-sm" (click)="setTab('home')">← HOME</button>
-    </div>
+  </main>
 
-    <div class="text-sm opacity-60">點一下就勾選 ✅</div>
+  <!-- ── FAB (floating add button) ── -->
+  <button *ngIf="showFab" (click)="openFab()"
+    class="fab">
+    <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+    </svg>
+  </button>
 
-    <div class="card bg-white p-4 flex items-center gap-4" *ngFor="let t of packing; index as i">
-      <input type="checkbox" class="w-6 h-6 accent-[#FF5A5F]" [(ngModel)]="packing[i].done" />
-      <div class="flex-1 text-lg font-extrabold text-[#2E2E2E]">{{ t.label }}</div>
-
-      <div class="flex gap-2">
-        <button *ngIf="actionMode === 'edit'" class="icon-btn" aria-label="Edit" (click)="openEditChecklist('packing', t)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 20h9"></path>
-            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
-          </svg>
-        </button>
-
-        <button *ngIf="actionMode === 'delete'" class="icon-btn" aria-label="Delete" (click)="deleteChecklist('packing', t.id)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 6h18"></path>
-            <path d="M8 6V4h8v2"></path>
-            <path d="M19 6l-1 14H6L5 6"></path>
-            <path d="M10 11v6"></path>
-            <path d="M14 11v6"></path>
-          </svg>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- GIFTS -->
-  <div *ngIf="activeTab === 'gifts'" class="mt-8 space-y-4">
-    <div class="flex items-center justify-between">
-      <div class="text-2xl h2 uppercase">Souvenir</div>
-      <button class="btn-ghost px-4 py-2 text-sm" (click)="setTab('home')">← HOME</button>
-    </div>
-
-    <div class="text-sm opacity-60">買到就勾 ✅</div>
-
-    <div class="card bg-white p-4 flex items-center gap-4" *ngFor="let t of gifts; index as i">
-      <input type="checkbox" class="w-6 h-6 accent-[#FF5A5F]" [(ngModel)]="gifts[i].done" />
-      <div class="flex-1 text-lg font-extrabold text-[#2E2E2E]">{{ t.label }}</div>
-
-      <div class="flex gap-2">
-        <button *ngIf="actionMode === 'edit'" class="icon-btn" aria-label="Edit" (click)="openEditChecklist('gift', t)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 20h9"></path>
-            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
-          </svg>
-        </button>
-
-        <button *ngIf="actionMode === 'delete'" class="icon-btn" aria-label="Delete" (click)="deleteChecklist('gift', t.id)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 6h18"></path>
-            <path d="M8 6V4h8v2"></path>
-            <path d="M19 6l-1 14H6L5 6"></path>
-            <path d="M10 11v6"></path>
-            <path d="M14 11v6"></path>
-          </svg>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- LEDGER (no bottom bar here by design) -->
-  <div *ngIf="activeTab === 'ledger'" class="mt-8 space-y-6">
-    <div class="flex items-center justify-between">
-      <div class="text-2xl h2 uppercase">Ledger</div>
-      <button class="btn-ghost px-4 py-2 text-sm" (click)="setTab('home')">← HOME</button>
-    </div>
-
-    <div class="card !bg-[#2E2E2E] !text-white p-6">
-      <div class="flex items-center justify-between">
-        <div class="text-white/70 text-xs font-bold uppercase tracking-widest">Exchange Rate</div>
-        <button class="btn-ghost px-3 py-1 text-xs bg-white/10 border-white/20 text-white" (click)="rateEdit = !rateEdit">
-          RATE: {{ rate }}
-        </button>
-      </div>
-
-      <div class="flex justify-between items-end mt-2">
-        <span class="text-5xl font-extrabold">¥ {{ jpyInput || '0' }}</span>
-        <span class="text-2xl font-bold text-white/90">≈ NT$ {{ twd }}</span>
-      </div>
-
-      <div *ngIf="rateEdit" class="mt-4">
-        <input class="w-full card bg-white p-3 text-[#2E2E2E]" type="number" step="0.001" [value]="rate" (input)="onRateInput($event)" />
-        <div class="text-xs text-white/60 mt-2">例：0.21（1 JPY = 0.21 TWD）</div>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-3 gap-3">
-      <button
-        *ngFor="let key of keys"
-        (click)="pressKey(key)"
-        class="card bg-white py-6 text-2xl font-extrabold text-[#2E2E2E] rounded-2xl active:scale-[0.99] transition"
-      >
-        {{ key }}
-      </button>
-    </div>
-
-    <button class="w-full btn-primary text-xl flex items-center justify-center gap-3 py-4 rounded-full" (click)="saveExpense()">
-      SAVE EXPENSE 💾
-    </button>
-
-    <div class="space-y-3">
-      <div *ngIf="expenses.length === 0" class="text-sm opacity-60">還沒有記帳紀錄</div>
-      <div class="card bg-white p-4" *ngFor="let item of expenses">
-        <div class="flex justify-between items-baseline">
-          <div class="text-xl font-extrabold text-[#2E2E2E]">¥{{ item.jpy }}</div>
-          <div class="text-lg font-extrabold text-[#FF5A5F]">NT${{ item.twd }}</div>
-        </div>
-        <div class="text-xs opacity-60 mt-1">{{ item.time }}</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Bottom 3 buttons: Edit / Delete / Add New Item -->
-<div *ngIf="showBottomBar" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-full px-6 max-w-md z-50">
-  <div class="card bg-white p-3 flex items-center justify-between gap-3">
-    <!-- Edit toggle -->
-    <button
-      class="icon-btn"
-      [style.background]="actionMode === 'edit' ? '#FF5A5F' : 'white'"
-      [style.color]="actionMode === 'edit' ? 'white' : '#2E2E2E'"
-      [style.borderColor]="actionMode === 'edit' ? '#FF5A5F' : '#d1d5db'"
-      aria-label="Toggle Edit"
-      (click)="toggleEditMode()"
-    >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 20h9"></path>
-        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+  <!-- ── BOTTOM NAVIGATION ── -->
+  <nav class="app-nav">
+    <!-- 行程 -->
+    <button class="nav-tab" [class.nav-tab-active]="activeTab === 'itinerary'" (click)="setTab('itinerary')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <rect x="3" y="4" width="18" height="18" rx="3"/>
+        <path d="M16 2v4M8 2v4M3 10h18"/>
+        <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
       </svg>
+      <span class="nav-label">行程</span>
     </button>
 
-    <!-- Delete toggle -->
-    <button
-      class="icon-btn"
-      [style.background]="actionMode === 'delete' ? '#FF5A5F' : 'white'"
-      [style.color]="actionMode === 'delete' ? 'white' : '#2E2E2E'"
-      [style.borderColor]="actionMode === 'delete' ? '#FF5A5F' : '#d1d5db'"
-      aria-label="Toggle Delete"
-      (click)="toggleDeleteMode()"
-    >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 6h18"></path>
-        <path d="M8 6V4h8v2"></path>
-        <path d="M19 6l-1 14H6L5 6"></path>
-        <path d="M10 11v6"></path>
-        <path d="M14 11v6"></path>
+    <!-- 清單 -->
+    <button class="nav-tab" [class.nav-tab-active]="activeTab === 'checklist'" (click)="setTab('checklist')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M9 11l3 3L22 4"/>
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
       </svg>
+      <span class="nav-label">清單</span>
     </button>
 
-    <!-- Add New -->
-    <button class="btn-primary flex-1 py-3 rounded-full font-extrabold" (click)="openAddSheet()">
-      Add New Item
+    <!-- 帳本 -->
+    <button class="nav-tab" [class.nav-tab-active]="activeTab === 'ledger'" (click)="setTab('ledger')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <rect x="2" y="3" width="20" height="18" rx="2"/>
+        <path d="M8 10h8M8 14h5"/>
+        <path d="M16 17v-7"/>
+      </svg>
+      <span class="nav-label">帳本</span>
     </button>
-  </div>
+
+    <!-- 分帳 -->
+    <button class="nav-tab" [class.nav-tab-active]="activeTab === 'split'" (click)="setTab('split')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      <span class="nav-label">分帳</span>
+    </button>
+
+    <!-- 設定 -->
+    <button class="nav-tab" [class.nav-tab-active]="activeTab === 'more'" (click)="setTab('more')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+      <span class="nav-label">設定</span>
+    </button>
+  </nav>
+
 </div>
 
-<!-- Pretty Bottom Sheet -->
-<div *ngIf="sheetOpen" class="fixed inset-0 z-[80] flex items-end sm:items-center justify-center">
-  <div class="absolute inset-0 bg-black/35" (click)="closeSheet()"></div>
+<!-- ── TRIP MANAGER MODAL ── -->
+<app-trip-manager
+  [isOpen]="tripManagerOpen"
+  (closed)="tripManagerOpen = false"
+  (tripSwitched)="onTripSwitched()"
+></app-trip-manager>
 
-  <div
-    class="relative w-full max-w-md mx-auto rounded-t-3xl sm:rounded-3xl bg-white shadow-[0_30px_90px_-35px_rgba(0,0,0,0.55)] border border-gray-200 p-5 sm:p-6"
-    (click)="$event.stopPropagation()"
-  >
-    <div class="flex items-start justify-between">
-      <div>
-        <div class="text-xs uppercase tracking-widest opacity-60">
-          {{ sheetMode === 'edit' ? 'Edit' : 'Add' }}
-        </div>
-        <div class="text-2xl h2 mt-1">{{ sheetStage === 'menu' ? '選擇類型' : '填寫內容' }}</div>
-        <div class="text-sm opacity-60 mt-1" *ngIf="sheetStage === 'menu' && activeTab === 'itinerary'">
-          Itinerary 會依時間自動排序
-        </div>
-      </div>
-
-      <button class="btn-ghost px-3 py-2 text-sm" (click)="closeSheet()">關閉</button>
-    </div>
-
-    <!-- MENU -->
-    <div *ngIf="sheetStage === 'menu'" class="mt-5 space-y-3">
-      <div *ngIf="activeTab === 'itinerary'" class="space-y-3">
-        <button class="card bg-white w-full p-4 text-left hover:bg-gray-50 transition" (click)="goAdd('itin-spot')">
-          <div class="flex items-center justify-between">
-            <div class="font-extrabold text-[#2E2E2E]">📍 景點 / 行程</div>
-            <span class="text-xs px-2 py-1 rounded-full bg-[#FF5A5F]/10 text-[#FF5A5F] font-bold">SPOT</span>
-          </div>
-        </button>
-
-        <button class="card bg-white w-full p-4 text-left hover:bg-gray-50 transition" (click)="goAdd('itin-food')">
-          <div class="flex items-center justify-between">
-            <div class="font-extrabold text-[#2E2E2E]">🍽️ 餐廳 / 用餐</div>
-            <span class="text-xs px-2 py-1 rounded-full bg-[#FF5A5F]/10 text-[#FF5A5F] font-bold">FOOD</span>
-          </div>
-        </button>
-
-        <button class="card bg-white w-full p-4 text-left hover:bg-gray-50 transition" (click)="goAdd('itin-plan')">
-          <div class="flex items-center justify-between">
-            <div class="font-extrabold text-[#2E2E2E]">✍️ 備註 / 交通 / 其他</div>
-            <span class="text-xs px-2 py-1 rounded-full bg-[#FF5A5F]/10 text-[#FF5A5F] font-bold">PLAN</span>
-          </div>
-        </button>
-      </div>
-
-      <div *ngIf="activeTab === 'packing'" class="space-y-3">
-        <button class="card bg-white w-full p-4 text-left hover:bg-gray-50 transition" (click)="goAdd('packing')">
-          <div class="font-extrabold text-[#2E2E2E]">🧳 新增行李項目</div>
-        </button>
-      </div>
-
-      <div *ngIf="activeTab === 'gifts'" class="space-y-3">
-        <button class="card bg-white w-full p-4 text-left hover:bg-gray-50 transition" (click)="goAdd('gift')">
-          <div class="font-extrabold text-[#2E2E2E]">🎁 新增伴手禮項目</div>
-        </button>
-      </div>
-    </div>
-
-    <!-- FORM -->
-    <div *ngIf="sheetStage === 'form'" class="mt-5 space-y-4">
-      <div *ngIf="sheetKind.startsWith('itin')" class="space-y-3">
-        <div>
-          <div class="text-sm font-bold text-[#2E2E2E] mb-1">時間</div>
-          <input class="card bg-white w-full px-4 py-3" placeholder="例如：09:00 / 下午 / 晚餐" [(ngModel)]="formTime" />
-        </div>
-
-        <div>
-          <div class="text-sm font-bold text-[#2E2E2E] mb-1">標題</div>
-          <input class="card bg-white w-full px-4 py-3" placeholder="例如：淺草雷門 / 天婦羅阿部" [(ngModel)]="formTitle" />
-        </div>
-
-        <div>
-          <div class="text-sm font-bold text-[#2E2E2E] mb-1">地圖連結（可留空）</div>
-          <input class="card bg-white w-full px-4 py-3" placeholder="貼 Google Maps 連結" [(ngModel)]="formUrl" />
-        </div>
-      </div>
-
-      <div *ngIf="sheetKind === 'packing' || sheetKind === 'gift'" class="space-y-3">
-        <div *ngIf="sheetMode === 'add'">
-          <div class="text-sm font-bold text-[#2E2E2E] mb-1">插入位置</div>
-          <select class="card bg-white w-full px-4 py-3" [(ngModel)]="formPos">
-            <option *ngFor="let p of positionOptions" [ngValue]="p">第 {{ p }} 個</option>
-          </select>
-        </div>
-
-        <div>
-          <div class="text-sm font-bold text-[#2E2E2E] mb-1">項目名稱</div>
-          <input class="card bg-white w-full px-4 py-3" placeholder="例如：行動電源 / 伴手禮（家人）" [(ngModel)]="formLabel" />
-        </div>
-      </div>
-
-      <div class="flex gap-3 pt-2">
-        <button class="btn-ghost w-1/3 py-3" (click)="backToMenu()">返回</button>
-        <button class="btn-primary w-2/3 py-3" (click)="submitSheet()">
-          {{ sheetMode === 'edit' ? '儲存' : '新增' }}
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- ── BOTTOM SHEET (ADD / EDIT) ── -->
+<app-bottom-sheet
+  [isOpen]="sheetOpen"
+  [sheetContext]="bottomSheetContext"
+  [editItinContext]="editItinContext"
+  [editListContext]="editListContext"
+  (closed)="onSheetClosed()"
+></app-bottom-sheet>
