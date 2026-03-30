@@ -15,7 +15,11 @@
           會依時間自動排序
         </div>
       </div>
-      <button class="btn-ghost px-3 py-2 text-sm" (click)="close()">關閉</button>
+      <button class="btn-ghost w-9 h-9 flex items-center justify-center rounded-full" (click)="close()" aria-label="關閉">
+        <svg class="w-5 h-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
     </div>
 
     <!-- MENU -->
@@ -59,7 +63,62 @@
       <div *ngIf="sheetKind.startsWith('itin')" class="space-y-3">
         <div>
           <div class="text-sm font-bold text-[#2E2E2E] mb-1">時間</div>
-          <input class="card bg-white w-full px-4 py-3" placeholder="例如：09:00 / 下午 / 晚餐" [(ngModel)]="formTime" />
+          <select class="card bg-white w-full px-4 py-3" [(ngModel)]="formTime">
+            <option value="" disabled>請選擇時間</option>
+            <option value="全天">全天</option>
+            <option value="早餐">早餐</option>
+            <option value="早上">早上</option>
+            <option value="上午">上午</option>
+            <option value="中午">中午</option>
+            <option value="午餐">午餐</option>
+            <option value="下午">下午</option>
+            <option value="傍晚">傍晚</option>
+            <option value="晚餐">晚餐</option>
+            <option value="晚上">晚上</option>
+            <option value="夜晚">夜晚</option>
+            <option value="深夜">深夜</option>
+            <optgroup label="── 具體時間 ──">
+              <option value="00:00">00:00</option>
+              <option value="01:00">01:00</option>
+              <option value="02:00">02:00</option>
+              <option value="05:00">05:00</option>
+              <option value="06:00">06:00</option>
+              <option value="07:00">07:00</option>
+              <option value="07:30">07:30</option>
+              <option value="08:00">08:00</option>
+              <option value="08:30">08:30</option>
+              <option value="09:00">09:00</option>
+              <option value="09:30">09:30</option>
+              <option value="10:00">10:00</option>
+              <option value="10:30">10:30</option>
+              <option value="11:00">11:00</option>
+              <option value="11:30">11:30</option>
+              <option value="12:00">12:00</option>
+              <option value="12:30">12:30</option>
+              <option value="13:00">13:00</option>
+              <option value="13:30">13:30</option>
+              <option value="14:00">14:00</option>
+              <option value="14:30">14:30</option>
+              <option value="15:00">15:00</option>
+              <option value="15:30">15:30</option>
+              <option value="16:00">16:00</option>
+              <option value="16:30">16:30</option>
+              <option value="17:00">17:00</option>
+              <option value="17:30">17:30</option>
+              <option value="18:00">18:00</option>
+              <option value="18:30">18:30</option>
+              <option value="19:00">19:00</option>
+              <option value="19:30">19:30</option>
+              <option value="20:00">20:00</option>
+              <option value="20:30">20:30</option>
+              <option value="21:00">21:00</option>
+              <option value="21:30">21:30</option>
+              <option value="22:00">22:00</option>
+              <option value="22:30">22:30</option>
+              <option value="23:00">23:00</option>
+              <option value="23:30">23:30</option>
+            </optgroup>
+          </select>
         </div>
         <div>
           <div class="text-sm font-bold text-[#2E2E2E] mb-1">標題</div>

@@ -1,10 +1,10 @@
 {
-  "name": "Tokyo Bound",
-  "short_name": "TokyoBound",
-  "start_url": "./?room=tripplan0123",
+  "name": "Trip Plan",
+  "short_name": "Trip Plan",
+  "start_url": "/trip-plan/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "theme_color": "#FF5A5F",
   "icons": [
     {
       "src": "assets/icons/icon-192.png",

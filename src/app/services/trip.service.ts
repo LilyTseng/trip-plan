@@ -12,6 +12,7 @@ interface StoredState {
   activeDate: string;
   packing: ChecklistItem[];
   gifts: ChecklistItem[];
+  updatedAt?: number;
 }
 
 interface RoomData {
@@ -40,15 +41,17 @@ export class TripService {
   syncStatus: SyncStatus = 'offline';
   private unsubFirestore: Unsubscribe | null = null;
   private saveTimer: ReturnType<typeof setTimeout> | null = null;
+  private localUpdatedAt = 0;
 
   constructor() {
     const saved = this.loadLocal();
     if (saved) {
-      this.trips        = saved.trips;
-      this.activeTripId = saved.activeTripId;
-      this.activeDate   = saved.activeDate;
-      this.packing      = saved.packing;
-      this.gifts        = saved.gifts;
+      this.trips           = saved.trips;
+      this.activeTripId    = saved.activeTripId;
+      this.activeDate      = saved.activeDate;
+      this.packing         = saved.packing;
+      this.gifts           = saved.gifts;
+      this.localUpdatedAt  = saved.updatedAt ?? 0;
     } else {
       this.initDefaults();
     }
@@ -84,6 +87,8 @@ export class TripService {
   }
 
   private applyRemoteData(data: RoomData): void {
+    // 只有 Firestore 資料比本地新時才套用，避免重整後舊資料覆蓋新資料
+    if ((data.updatedAt ?? 0) < this.localUpdatedAt) return;
     this.trips   = data.trips   ?? this.trips;
     this.packing = data.packing ?? this.packing;
     this.gifts   = data.gifts   ?? this.gifts;
@@ -95,6 +100,8 @@ export class TripService {
 
   /* ── Persistence ── */
   private save(): void {
+    this.localUpdatedAt = Date.now();
+    this.syncStatus = 'syncing';
     this.saveLocal();
     if (this.saveTimer) clearTimeout(this.saveTimer);
     this.saveTimer = setTimeout(() => this.pushToFirestore(), 600);
@@ -104,6 +111,7 @@ export class TripService {
     const state: StoredState = {
       trips: this.trips, activeTripId: this.activeTripId,
       activeDate: this.activeDate, packing: this.packing, gifts: this.gifts,
+      updatedAt: this.localUpdatedAt,
     };
     localStorage.setItem(LOCAL_KEY, JSON.stringify(state));
   }

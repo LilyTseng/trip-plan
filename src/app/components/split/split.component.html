@@ -1,4 +1,4 @@
-<div class="space-y-6 mt-6">
+<div class="space-y-6">
 
   <!-- 成員列 -->
   <div>
@@ -161,7 +161,11 @@
         <div class="text-xs uppercase tracking-widest opacity-60">Split</div>
         <div class="text-2xl h2 mt-1">{{ isEditing ? '編輯費用' : '新增費用' }}</div>
       </div>
-      <button class="btn-ghost px-3 py-2 text-sm" (click)="closeExpenseModal()">關閉</button>
+      <button class="btn-ghost w-9 h-9 flex items-center justify-center rounded-full" (click)="closeExpenseModal()" aria-label="關閉">
+        <svg class="w-5 h-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
     </div>
 
     <div class="mt-5 space-y-4">

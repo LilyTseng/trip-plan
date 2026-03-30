@@ -13,7 +13,11 @@
           {{ stage === 'list' ? '我的旅遊' : stage === 'add' ? '新增旅遊' : '編輯旅遊' }}
         </div>
       </div>
-      <button class="btn-ghost px-3 py-2 text-sm" (click)="close()">關閉</button>
+      <button class="btn-ghost w-9 h-9 flex items-center justify-center rounded-full" (click)="close()" aria-label="關閉">
+        <svg class="w-5 h-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
     </div>
 
     <!-- LIST -->
