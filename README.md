@@ -1,59 +1,63 @@
-# TripPlanningClean
+# Trip Plan
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.0.
+多人即時同步的旅遊規劃 App，支援行程安排、行李清單、分帳結算。
 
-## Development server
+**Live:** https://lilytseng.github.io/trip-plan/
 
-To start a local development server, run:
+## 功能
 
-```bash
-ng serve
-```
+- **行程管理** — 每日行程事件，支援長按拖曳排序、跨日移動
+- **行李 / 伴手禮清單** — 每趟旅行獨立的 checklist
+- **分帳** — 多幣別支援、即時匯率、自動結算誰欠誰多少
+- **帳本** — JPY 快速換算計算機
+- **即時同步** — Firebase Firestore 多人即時共享
+- **離線支援** — localStorage 離線快取，恢復連線後自動同步
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Tech Stack
 
-## Code scaffolding
+- Angular 21 (standalone components)
+- Firebase Firestore + Anonymous Auth
+- Tailwind CSS 3
+- GitHub Pages 部署
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+## 開發
 
 ```bash
-ng build
+npm install
+npm start         # http://localhost:4200
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+需要 Node.js >= 20.19。
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## 部署
 
 ```bash
-ng test
+make deploy       # build → 複製到 docs/ → commit → push
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+或分開執行：
 
 ```bash
-ng e2e
+make build        # 只 build
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## 專案結構
 
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+```
+src/app/
+  models/types.ts              # 資料型別定義
+  services/
+    trip.service.ts            # 核心資料管理 + Firestore 同步
+    ledger.service.ts          # 帳本（JPY 換算）
+    exchange-rate.service.ts   # 即時匯率 API
+    undo.service.ts            # 刪除復原 snackbar
+  components/
+    itinerary/                 # 行程頁（含拖曳排序）
+    checklist/                 # 行李 / 伴手禮清單
+    ledger/                    # 帳本計算機
+    split/                     # 分帳 + 結算
+    bottom-sheet/              # 新增 / 編輯表單
+    trip-manager/              # 旅行管理 modal
+  firebase.config.ts           # Firebase 初始化 + 匿名登入
+firestore.rules                # Firestore 安全規則
+```
