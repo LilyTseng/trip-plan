@@ -1,7 +1,3 @@
-import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-import { getAuth, signInAnonymously, onAuthStateChanged, Auth, User } from 'firebase/auth';
-
 const firebaseConfig = {
   apiKey: 'AIzaSyDEIBk4bsXR_ZWeDpWf1VNFex4UZ-YAawM',
   authDomain: 'tripplan0123.firebaseapp.com',
@@ -11,20 +7,29 @@ const firebaseConfig = {
   appId: '1:850565009387:web:375b648b6f128799db53ae',
 };
 
-export const firebaseApp = initializeApp(firebaseConfig);
-export const db = getFirestore(firebaseApp);
-export const auth: Auth = getAuth(firebaseApp);
+/** 動態載入 Firebase，避免初始 bundle 包含 ~1.4 MB 的 Firebase SDK */
+export async function loadFirebase() {
+  const [{ initializeApp }, { getFirestore }, { getAuth, signInAnonymously, onAuthStateChanged }] =
+    await Promise.all([
+      import('firebase/app'),
+      import('firebase/firestore'),
+      import('firebase/auth'),
+    ]);
 
-/** 自動匿名登入，回傳已登入的 User */
-export function ensureAuth(): Promise<User> {
-  return new Promise((resolve, reject) => {
-    const unsub = onAuthStateChanged(auth, (user) => {
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  // 匿名登入
+  const user = await new Promise<import('firebase/auth').User>((resolve, reject) => {
+    const unsub = onAuthStateChanged(auth, (u) => {
       unsub();
-      if (user) {
-        resolve(user);
-      } else {
-        signInAnonymously(auth).then(cred => resolve(cred.user)).catch(reject);
-      }
+      if (u) { resolve(u); }
+      else { signInAnonymously(auth).then(c => resolve(c.user)).catch(reject); }
     }, reject);
   });
+
+  return { db, auth, user };
 }
+
+export type FirebaseInstance = Awaited<ReturnType<typeof loadFirebase>>;

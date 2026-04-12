@@ -1,6 +1,5 @@
 import { Injectable, NgZone, inject } from '@angular/core';
-import { doc, setDoc, onSnapshot, Unsubscribe } from 'firebase/firestore';
-import { db, ensureAuth } from '../firebase.config';
+import { loadFirebase, type FirebaseInstance } from '../firebase.config';
 import { ChecklistItem, EventType, ExpenseItem, ItinEvent, Member, Settlement, SplitExpense, Trip } from '../models/types';
 
 const LOCAL_KEY  = 'trip_plan_v1';
@@ -45,7 +44,9 @@ export class TripService {
 
   /* ── Cloud sync ── */
   syncStatus: SyncStatus = 'offline';
-  private unsubFirestore: Unsubscribe | null = null;
+  private firebase: FirebaseInstance | null = null;
+  private firestoreMod: typeof import('firebase/firestore') | null = null;
+  private unsubFirestore: (() => void) | null = null;
   private saveTimer: ReturnType<typeof setTimeout> | null = null;
   private localUpdatedAt = 0;
 
@@ -63,13 +64,28 @@ export class TripService {
     } else {
       this.initDefaults();
     }
-    // 先匿名登入，成功後才連接 Firestore
-    ensureAuth()
-      .then(() => this.connectFirestore())
-      .catch(() => { this.syncStatus = 'offline'; });
+    // 動態載入 Firebase（不阻塞初始渲染）
+    this.initFirebase();
+  }
+
+  private async initFirebase(): Promise<void> {
+    try {
+      const [fb, mod] = await Promise.all([
+        loadFirebase(),
+        import('firebase/firestore'),
+      ]);
+      this.firebase = fb;
+      this.firestoreMod = mod;
+      this.connectFirestore();
+    } catch {
+      this.syncStatus = 'offline';
+    }
   }
 
   private connectFirestore(): void {
+    if (!this.firebase || !this.firestoreMod) return;
+    const { doc, onSnapshot } = this.firestoreMod;
+    const { db } = this.firebase;
     this.syncStatus = 'syncing';
     this.unsubFirestore = onSnapshot(
       doc(db, 'rooms', FIRESTORE_DOC),
@@ -87,6 +103,9 @@ export class TripService {
   }
 
   private async pushToFirestore(): Promise<void> {
+    if (!this.firebase || !this.firestoreMod) return;
+    const { doc, setDoc } = this.firestoreMod;
+    const { db } = this.firebase;
     this.syncStatus = 'syncing';
     try {
       await setDoc(doc(db, 'rooms', FIRESTORE_DOC), {
