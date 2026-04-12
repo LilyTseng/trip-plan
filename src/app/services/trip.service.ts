@@ -193,12 +193,34 @@ export class TripService {
 
   private applyRemoteData(data: RoomData): void {
     if ((data.updatedAt ?? 0) < this.localUpdatedAt) return;
-    this.trips           = data.trips           ?? this.trips;
+    const trips = data.trips ?? this.trips;
+    // 遷移遠端資料中的舊格式
+    let needsPush = false;
+    for (const trip of trips) {
+      const hasOldKeys = Object.keys(trip.itin).some(k => !/^\d{4}-\d{2}-\d{2}$/.test(k));
+      if (hasOldKeys) {
+        trip.itin = this.migrateItinKeys(trip);
+        needsPush = true;
+      }
+      if (!trip.packing) { trip.packing = (data as any).packing ?? []; needsPush = true; }
+      if (!trip.gifts) { trip.gifts = (data as any).gifts ?? []; needsPush = true; }
+    }
+    this.trips           = trips;
     this.ledgerExpenses  = data.ledgerExpenses  ?? this.ledgerExpenses;
     this.ledgerRate      = data.ledgerRate      ?? this.ledgerRate;
     if (!this.trips.find(t => t.id === this.activeTripId)) {
       this.activeTripId = this.trips[0]?.id ?? '';
-      this.activeDate   = this.dates[0] ?? '';
+    }
+    // 確保 activeDate 是 ISO 格式
+    if (this.activeDate && !/^\d{4}-\d{2}-\d{2}$/.test(this.activeDate)) {
+      this.activeDate = this.migrateActiveDateKey(this.activeDate, this.activeTrip);
+    }
+    if (!this.activeDate || !this.itin[this.activeDate]) {
+      this.activeDate = this.dates[0] ?? '';
+    }
+    if (needsPush) {
+      // 把遷移後的資料推回 Firestore
+      setTimeout(() => this.pushToFirestore(), 100);
     }
   }
 
@@ -269,7 +291,10 @@ export class TripService {
 
   /** 將 ISO key 格式化為顯示用 "1/23（五）" */
   formatDateKey(isoKey: string): string {
+    // 若已是舊格式（如 "1/23（五）"），直接回傳
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(isoKey)) return isoKey;
     const d = new Date(isoKey + 'T00:00:00');
+    if (isNaN(d.getTime())) return isoKey;
     return `${d.getMonth()+1}/${d.getDate()}（${this.chineseDays[d.getDay()]}）`;
   }
 
