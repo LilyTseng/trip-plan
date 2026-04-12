@@ -38,6 +38,13 @@ export class ItineraryComponent implements OnDestroy {
 
   formatDate(d: string) { return this.trip.formatDateKey(d); }
 
+  /** 當日花費（TWD） */
+  dayExpense(dateKey: string): number {
+    return this.trip.splitExpenses
+      .filter(e => e.date === dateKey)
+      .reduce((sum, e) => sum + e.amountTwd, 0);
+  }
+
   /** 產生 Google Maps 多點路線連結 */
   get mapsRouteUrl(): string | null {
     const events = this.activeEvents.filter(e => e.url);

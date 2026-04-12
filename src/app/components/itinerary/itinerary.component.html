@@ -13,6 +13,10 @@
       [style.color]="d === activeDate ? 'rgba(255,255,255,0.7)' : '#bbb'">
       {{ formatDate(d).split('（')[1]?.replace('）','') }}
     </div>
+    <div *ngIf="dayExpense(d) > 0" class="text-[9px] font-bold leading-tight mt-0.5"
+      [style.color]="d === activeDate ? 'rgba(255,255,255,0.8)' : '#FF5A5F'">
+      ${{ dayExpense(d).toLocaleString() }}
+    </div>
   </button>
 </div>
 

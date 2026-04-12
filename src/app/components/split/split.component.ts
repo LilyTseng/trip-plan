@@ -36,6 +36,15 @@ export class SplitComponent {
   get settlements(): Settlement[] { return this.trip.calculateSettlements(); }
   get isEditing(): boolean { return this.editingExpenseId !== null; }
 
+  get totalExpenseTwd(): number {
+    return this.expenses.reduce((sum, e) => sum + e.amountTwd, 0);
+  }
+
+  get perPersonAvg(): number {
+    const n = this.members.length;
+    return n > 0 ? Math.round(this.totalExpenseTwd / n) : 0;
+  }
+
   /** 即時 TWD 預覽（使用 formRate，支援手動調整） */
   get twdPreview(): number {
     if (this.formCurrency === 'TWD') {
