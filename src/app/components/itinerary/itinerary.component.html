@@ -7,7 +7,7 @@
     [style.color]="d === activeDate ? '#fff' : '#888'"
     [style.borderColor]="d === activeDate ? '#FF5A5F' : '#E5E5E5'"
     (click)="selectDate(d)"
-  >{{ d }}</button>
+  >{{ trip.formatDateKey(d) }}</button>
 </div>
 
 <!-- Event list -->

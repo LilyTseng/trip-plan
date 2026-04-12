@@ -3,15 +3,13 @@ import { loadFirebase, type FirebaseInstance } from '../firebase.config';
 import { ChecklistItem, EventType, ExpenseItem, ItinEvent, Member, Settlement, SplitExpense, Trip } from '../models/types';
 import { UndoService } from './undo.service';
 
-const LOCAL_KEY  = 'trip_plan_v1';
-const FIRESTORE_DOC = 'main'; // 所有人共用同一份文件
+const LOCAL_KEY  = 'trip_plan_v2'; // v2: ISO date keys + per-trip checklists
+const FIRESTORE_DOC = 'main';
 
 interface StoredState {
   trips: Trip[];
   activeTripId: string;
   activeDate: string;
-  packing: ChecklistItem[];
-  gifts: ChecklistItem[];
   ledgerExpenses: ExpenseItem[];
   ledgerRate: number;
   updatedAt?: number;
@@ -19,8 +17,6 @@ interface StoredState {
 
 interface RoomData {
   trips: Trip[];
-  packing: ChecklistItem[];
-  gifts: ChecklistItem[];
   ledgerExpenses: ExpenseItem[];
   ledgerRate: number;
   updatedAt: number;
@@ -39,8 +35,6 @@ export class TripService {
   trips: Trip[] = [];
   activeTripId = '';
   activeDate = '';
-  packing: ChecklistItem[] = [];
-  gifts: ChecklistItem[] = [];
   ledgerExpenses: ExpenseItem[] = [];
   ledgerRate = 0.21;
 
@@ -58,18 +52,95 @@ export class TripService {
       this.trips           = saved.trips;
       this.activeTripId    = saved.activeTripId;
       this.activeDate      = saved.activeDate;
-      this.packing         = saved.packing;
-      this.gifts           = saved.gifts;
       this.ledgerExpenses  = saved.ledgerExpenses ?? [];
       this.ledgerRate      = saved.ledgerRate ?? 0.21;
       this.localUpdatedAt  = saved.updatedAt ?? 0;
     } else {
-      this.initDefaults();
+      // 嘗試從 v1 遷移
+      const migrated = this.migrateV1();
+      if (!migrated) this.initDefaults();
     }
-    // 動態載入 Firebase（不阻塞初始渲染）
     this.initFirebase();
   }
 
+  /* ── V1 → V2 Migration ── */
+  private migrateV1(): boolean {
+    try {
+      const raw = localStorage.getItem('trip_plan_v1');
+      if (!raw) return false;
+      const v1 = JSON.parse(raw) as any;
+      if (!v1.trips?.length) return false;
+
+      // Migrate each trip: convert itin keys to ISO, add per-trip packing/gifts
+      for (const trip of v1.trips) {
+        trip.itin = this.migrateItinKeys(trip);
+        trip.packing = trip.packing ?? v1.packing ?? [];
+        trip.gifts = trip.gifts ?? v1.gifts ?? [];
+      }
+
+      this.trips          = v1.trips;
+      this.activeTripId   = v1.activeTripId;
+      this.ledgerExpenses = v1.ledgerExpenses ?? [];
+      this.ledgerRate     = v1.ledgerRate ?? 0.21;
+
+      // Migrate activeDate
+      this.activeDate = this.migrateActiveDateKey(v1.activeDate, this.activeTrip);
+      this.localUpdatedAt = v1.updatedAt ?? 0;
+
+      // Save as v2 and remove v1
+      this.saveLocal();
+      localStorage.removeItem('trip_plan_v1');
+      return true;
+    } catch { return false; }
+  }
+
+  private migrateItinKeys(trip: any): Record<string, ItinEvent[]> {
+    const oldItin = trip.itin as Record<string, ItinEvent[]>;
+    const newItin: Record<string, ItinEvent[]> = {};
+    const start = trip.startDate as string;
+    const end = trip.endDate as string;
+
+    // Build mapping: old display key → ISO key
+    const oldKeys = this.generateDisplayKeys(start, end);
+    const isoKeys = this.generateDateKeys(start, end);
+
+    for (let i = 0; i < oldKeys.length; i++) {
+      const events = oldItin[oldKeys[i]] ?? oldItin[isoKeys[i]] ?? [];
+      newItin[isoKeys[i]] = events;
+    }
+
+    // Preserve any keys that didn't match (safety net)
+    for (const [key, events] of Object.entries(oldItin)) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(key)) {
+        if (!newItin[key]) newItin[key] = events;
+      }
+    }
+
+    return newItin;
+  }
+
+  private migrateActiveDateKey(oldKey: string, trip: Trip): string {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(oldKey)) return oldKey; // Already ISO
+    // Try to find matching ISO key
+    const displayKeys = this.generateDisplayKeys(trip.startDate, trip.endDate);
+    const isoKeys = this.generateDateKeys(trip.startDate, trip.endDate);
+    const idx = displayKeys.indexOf(oldKey);
+    return idx >= 0 ? isoKeys[idx] : isoKeys[0] ?? '';
+  }
+
+  /** Old-style display keys for migration only */
+  private generateDisplayKeys(startDate: string, endDate: string): string[] {
+    const keys: string[] = [];
+    const cur = new Date(startDate + 'T00:00:00');
+    const end = new Date(endDate  + 'T00:00:00');
+    while (cur <= end) {
+      keys.push(`${cur.getMonth()+1}/${cur.getDate()}（${this.chineseDays[cur.getDay()]}）`);
+      cur.setDate(cur.getDate() + 1);
+    }
+    return keys;
+  }
+
+  /* ── Firebase ── */
   private async initFirebase(): Promise<void> {
     try {
       const [fb, mod] = await Promise.all([
@@ -111,25 +182,23 @@ export class TripService {
     this.syncStatus = 'syncing';
     try {
       await setDoc(doc(db, 'rooms', FIRESTORE_DOC), {
-        trips: this.trips, packing: this.packing,
-        gifts: this.gifts, ledgerExpenses: this.ledgerExpenses,
-        ledgerRate: this.ledgerRate, updatedAt: Date.now(),
+        trips: this.trips,
+        ledgerExpenses: this.ledgerExpenses,
+        ledgerRate: this.ledgerRate,
+        updatedAt: Date.now(),
       });
       this.syncStatus = 'synced';
     } catch { this.syncStatus = 'offline'; }
   }
 
   private applyRemoteData(data: RoomData): void {
-    // 只有 Firestore 資料比本地新時才套用，避免重整後舊資料覆蓋新資料
     if ((data.updatedAt ?? 0) < this.localUpdatedAt) return;
     this.trips           = data.trips           ?? this.trips;
-    this.packing         = data.packing         ?? this.packing;
-    this.gifts           = data.gifts           ?? this.gifts;
     this.ledgerExpenses  = data.ledgerExpenses  ?? this.ledgerExpenses;
     this.ledgerRate      = data.ledgerRate      ?? this.ledgerRate;
     if (!this.trips.find(t => t.id === this.activeTripId)) {
       this.activeTripId = this.trips[0]?.id ?? '';
-      this.activeDate   = Object.keys(this.trips[0]?.itin ?? {})[0] ?? '';
+      this.activeDate   = this.dates[0] ?? '';
     }
   }
 
@@ -145,7 +214,7 @@ export class TripService {
   private saveLocal(): void {
     const state: StoredState = {
       trips: this.trips, activeTripId: this.activeTripId,
-      activeDate: this.activeDate, packing: this.packing, gifts: this.gifts,
+      activeDate: this.activeDate,
       ledgerExpenses: this.ledgerExpenses, ledgerRate: this.ledgerRate,
       updatedAt: this.localUpdatedAt,
     };
@@ -164,60 +233,72 @@ export class TripService {
     const defaultTrip: Trip = {
       id: this.uid(), name: '日本東京',
       startDate: '2025-01-23', endDate: '2025-01-27',
-      itin: this.makeDefaultItin(), members: [], splitExpenses: [], settledPairKeys: [],
+      itin: this.makeDefaultItin(),
+      packing: [
+        { id: this.uid(), label: '護照 / 在留卡',    done: false },
+        { id: this.uid(), label: '充電器 / 行動電源', done: false },
+        { id: this.uid(), label: '雨傘 / 雨衣',       done: false },
+        { id: this.uid(), label: '保暖外套',           done: false },
+      ],
+      gifts: [
+        { id: this.uid(), label: '薯條三兄弟',     done: false },
+        { id: this.uid(), label: '藥妝（家人）',   done: false },
+        { id: this.uid(), label: '朋友伴手禮',     done: false },
+      ],
+      members: [], splitExpenses: [], settledPairKeys: [],
     };
     this.trips        = [defaultTrip];
     this.activeTripId = defaultTrip.id;
-    this.activeDate   = Object.keys(defaultTrip.itin)[0];
-    this.packing = [
-      { id: this.uid(), label: '護照 / 在留卡',    done: false },
-      { id: this.uid(), label: '充電器 / 行動電源', done: false },
-      { id: this.uid(), label: '雨傘 / 雨衣',       done: false },
-      { id: this.uid(), label: '保暖外套',           done: false },
-    ];
-    this.gifts = [
-      { id: this.uid(), label: '薯條三兄弟',     done: false },
-      { id: this.uid(), label: '藥妝（家人）',   done: false },
-      { id: this.uid(), label: '朋友伴手禮',     done: false },
-    ];
+    this.activeDate   = this.dates[0];
   }
 
+  /** ISO date keys: "2025-01-23" */
   generateDateKeys(startDate: string, endDate: string): string[] {
     const keys: string[] = [];
     const cur = new Date(startDate + 'T00:00:00');
     const end = new Date(endDate  + 'T00:00:00');
     while (cur <= end) {
-      keys.push(`${cur.getMonth()+1}/${cur.getDate()}（${this.chineseDays[cur.getDay()]}）`);
+      const y = cur.getFullYear();
+      const m = String(cur.getMonth() + 1).padStart(2, '0');
+      const d = String(cur.getDate()).padStart(2, '0');
+      keys.push(`${y}-${m}-${d}`);
       cur.setDate(cur.getDate() + 1);
     }
     return keys;
   }
 
+  /** 將 ISO key 格式化為顯示用 "1/23（五）" */
+  formatDateKey(isoKey: string): string {
+    const d = new Date(isoKey + 'T00:00:00');
+    return `${d.getMonth()+1}/${d.getDate()}（${this.chineseDays[d.getDay()]}）`;
+  }
+
   private makeDefaultItin(): Record<string, ItinEvent[]> {
     return {
-      '1/23（五）': [
+      '2025-01-23': [
         { id: this.uid(), time: '22:30', title: '✈️ 落地', type: 'PLAN' },
         { id: this.uid(), time: '晚餐', title: '🍢 Yakitori TORIICHIZU Akihabara', type: 'FOOD', url: 'https://maps.app.goo.gl/bT9PwiA7bSJKdTTo6' },
       ],
-      '1/24（六）': [
+      '2025-01-24': [
         { id: this.uid(), time: '09:00', title: '⛩ 淺草雷門',  type: 'SPOT' },
         { id: this.uid(), time: '11:30', title: '🍚 豬排丼屋 瑞兆', type: 'FOOD' },
         { id: this.uid(), time: '19:00', title: '🍶 SAKE MARKET Akihabara', type: 'FOOD' },
       ],
-      '1/25（日）': [{ id: this.uid(), time: '全天', title: '🎆 河口湖一日遊＋冬花火', type: 'PLAN' }],
-      '1/26（一）': [{ id: this.uid(), time: '夜晚', title: '🌃 銀座 / 東京鐵塔', type: 'SPOT' }],
-      '1/27（二）': [{ id: this.uid(), time: '全天', title: '🎢 東京迪士尼樂園', type: 'SPOT' }],
+      '2025-01-25': [{ id: this.uid(), time: '全天', title: '🎆 河口湖一日遊＋冬花火', type: 'PLAN' }],
+      '2025-01-26': [{ id: this.uid(), time: '夜晚', title: '🌃 銀座 / 東京鐵塔', type: 'SPOT' }],
+      '2025-01-27': [{ id: this.uid(), time: '全天', title: '🎢 東京迪士尼樂園', type: 'SPOT' }],
     };
   }
 
   /* ── Getters ── */
   get activeTrip(): Trip { return this.trips.find(t => t.id === this.activeTripId) ?? this.trips[0]; }
   get itin(): Record<string, ItinEvent[]> { return this.activeTrip.itin; }
+  get packing(): ChecklistItem[] { return this.activeTrip.packing; }
+  set packing(v: ChecklistItem[]) { this.activeTrip.packing = v; }
+  get gifts(): ChecklistItem[] { return this.activeTrip.gifts; }
+  set gifts(v: ChecklistItem[]) { this.activeTrip.gifts = v; }
   get dates(): string[] {
-    return Object.keys(this.activeTrip.itin).sort((a, b) => {
-      const parse = (k: string) => { const m = k.match(/^(\d+)\/(\d+)/); return m ? +m[1] * 100 + +m[2] : 0; };
-      return parse(a) - parse(b);
-    });
+    return Object.keys(this.activeTrip.itin).sort();
   }
 
   /* ── Trip CRUD ── */
@@ -230,7 +311,11 @@ export class TripService {
   addTrip(name: string, startDate: string, endDate: string): Trip {
     const itin: Record<string, ItinEvent[]> = {};
     this.generateDateKeys(startDate, endDate).forEach(k => { itin[k] = []; });
-    const trip: Trip = { id: this.uid(), name, startDate, endDate, itin, members: [], splitExpenses: [], settledPairKeys: [] };
+    const trip: Trip = {
+      id: this.uid(), name, startDate, endDate, itin,
+      packing: [], gifts: [],
+      members: [], splitExpenses: [], settledPairKeys: [],
+    };
     this.trips = [...this.trips, trip];
     this.save();
     return trip;
@@ -316,7 +401,7 @@ export class TripService {
     });
   }
 
-  /* ── Checklist CRUD ── */
+  /* ── Checklist CRUD (per-trip) ── */
   addChecklistItem(kind: 'packing' | 'gift', label: string, pos: number): void {
     const arr = kind === 'packing' ? [...this.packing] : [...this.gifts];
     arr.splice(Math.max(0, Math.min(pos - 1, arr.length)), 0, { id: this.uid(), label, done: false });

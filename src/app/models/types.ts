@@ -56,6 +56,8 @@ export interface Trip {
   startDate: string; // "YYYY-MM-DD"
   endDate: string;
   itin: Record<string, ItinEvent[]>;
+  packing: ChecklistItem[];
+  gifts: ChecklistItem[];
   members: Member[];
   splitExpenses: SplitExpense[];
   settledPairKeys: string[]; // "${from}::${to}" 代表該筆已結清
