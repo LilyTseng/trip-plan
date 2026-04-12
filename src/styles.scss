@@ -161,6 +161,13 @@ body {
   animation: hero-gradient 10s ease infinite;
 }
 
+/* ===== Drag-reorder: disable text selection on event cards ===== */
+.event-list [data-event-id] {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
 /* ===== Scrollbar helper ===== */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
