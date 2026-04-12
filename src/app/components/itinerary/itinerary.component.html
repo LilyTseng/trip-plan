@@ -11,14 +11,25 @@
 </div>
 
 <!-- Event list -->
-<div class="mt-4 space-y-3">
+<div class="mt-4 space-y-3 event-list">
   <div *ngIf="activeEvents.length === 0" class="text-center py-12 text-gray-300">
     <div class="text-4xl mb-2">🗓️</div>
     <div class="text-sm">還沒有行程，點右下角 + 新增</div>
   </div>
 
-  <div *ngFor="let e of activeEvents"
-    class="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.08)] overflow-hidden">
+  <div *ngFor="let e of activeEvents; let i = index"
+    #cardEl
+    [attr.data-event-id]="e.id"
+    class="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.08)] overflow-hidden transition-all duration-200"
+    [class.opacity-30]="dragging && dragId === e.id"
+    [class.scale-[0.97]]="dragging && dragId === e.id"
+    [style.border-color]="dragging && dragOverIdx === i && dragId !== e.id ? '#FF5A5F' : ''"
+    [style.border-top-width]="dragging && dragOverIdx === i && dragId !== e.id ? '3px' : ''"
+    (touchstart)="onPointerDown($event, e, cardEl)"
+    (touchend)="onPointerCancel()"
+    (touchcancel)="onPointerCancel()"
+    (mousedown)="onPointerDown($event, e, cardEl)"
+    (mouseleave)="onPointerCancel()">
     <div class="flex items-stretch">
       <!-- Left color bar -->
       <div class="w-1 shrink-0"

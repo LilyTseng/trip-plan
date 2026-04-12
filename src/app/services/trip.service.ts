@@ -245,12 +245,19 @@ export class TripService {
   selectDate(d: string): void { this.activeDate = d; this.saveLocal(); }
 
   /* ── Itinerary CRUD ── */
-  getEvents(dateKey: string): ItinEvent[] { return this.sortByTime(this.itin[dateKey] ?? []); }
+  getEvents(dateKey: string): ItinEvent[] { return this.itin[dateKey] ?? []; }
 
   addItinEvent(dateKey: string, time: string, title: string, type: EventType, url?: string): void {
     const cur = [...(this.itin[dateKey] ?? [])];
     cur.push({ id: this.uid(), time, title, type, url: url || undefined });
-    this.itin[dateKey] = cur;
+    this.itin[dateKey] = this.sortByTime(cur);
+    this.save();
+  }
+
+  reorderItinEvents(dateKey: string, orderedIds: string[]): void {
+    const events = this.itin[dateKey] ?? [];
+    const map = new Map(events.map(e => [e.id, e]));
+    this.itin[dateKey] = orderedIds.map(id => map.get(id)!).filter(Boolean);
     this.save();
   }
 
