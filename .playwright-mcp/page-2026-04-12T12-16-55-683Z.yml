@@ -1,0 +1,78 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e7]: 日本東京
+          - heading "Japan Tokyo" [level=1] [ref=e8]
+          - generic [ref=e9]: ✈️ 1/23 – 1/27
+        - generic [ref=e10]:
+          - generic [ref=e13]: 離線
+          - button [ref=e14] [cursor=pointer]:
+            - img [ref=e15]
+    - main [ref=e19]:
+      - generic [ref=e21]:
+        - generic [ref=e24]:
+          - img [ref=e25]
+          - textbox "搜尋行程..." [ref=e28]
+        - generic [ref=e29]:
+          - button "1/23 四" [ref=e30] [cursor=pointer]:
+            - generic [ref=e31]: 1/23
+            - generic [ref=e32]: 四
+          - button "1/24 五" [ref=e33] [cursor=pointer]:
+            - generic [ref=e34]: 1/24
+            - generic [ref=e35]: 五
+          - button "1/25 六" [ref=e36] [cursor=pointer]:
+            - generic [ref=e37]: 1/25
+            - generic [ref=e38]: 六
+          - button "1/26 日" [ref=e39] [cursor=pointer]:
+            - generic [ref=e40]: 1/26
+            - generic [ref=e41]: 日
+          - button "1/27 一" [ref=e42] [cursor=pointer]:
+            - generic [ref=e43]: 1/27
+            - generic [ref=e44]: 一
+        - generic [ref=e45]:
+          - generic [ref=e50]:
+            - generic [ref=e51]:
+              - generic [ref=e52]:
+                - generic [ref=e53]: PLAN
+                - generic [ref=e54]: 22:30
+              - generic [ref=e55]: ✈️ 落地
+            - generic [ref=e56]:
+              - button [ref=e57] [cursor=pointer]:
+                - img [ref=e58]
+              - button [ref=e60] [cursor=pointer]:
+                - img [ref=e61]
+          - generic [ref=e68]:
+            - generic [ref=e69]:
+              - generic [ref=e70]:
+                - generic [ref=e71]: FOOD
+                - generic [ref=e72]: 晚餐
+              - generic [ref=e73]: 🍢 Yakitori TORIICHIZU Akihabara
+            - generic [ref=e74]:
+              - link [ref=e75] [cursor=pointer]:
+                - /url: https://maps.app.goo.gl/bT9PwiA7bSJKdTTo6
+                - img [ref=e76]
+              - button [ref=e80] [cursor=pointer]:
+                - img [ref=e81]
+              - button [ref=e83] [cursor=pointer]:
+                - img [ref=e84]
+    - button [ref=e87] [cursor=pointer]:
+      - img [ref=e88]
+    - navigation [ref=e90]:
+      - button "行程" [ref=e91] [cursor=pointer]:
+        - img [ref=e92]
+        - generic [ref=e96]: 行程
+      - button "清單" [ref=e97] [cursor=pointer]:
+        - img [ref=e98]
+        - generic [ref=e101]: 清單
+      - button "帳本" [ref=e102] [cursor=pointer]:
+        - img [ref=e103]
+        - generic [ref=e106]: 帳本
+      - button "分帳" [ref=e107] [cursor=pointer]:
+        - img [ref=e108]
+        - generic [ref=e112]: 分帳
+      - button "更多" [ref=e113] [cursor=pointer]:
+        - img [ref=e114]
+        - generic [ref=e118]: 更多
+  - generic [ref=e119]: 📡 目前離線，變更將在恢復連線後同步

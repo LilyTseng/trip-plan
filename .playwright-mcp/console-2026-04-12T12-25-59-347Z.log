@@ -1,0 +1,2 @@
+[    1149ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://lilytseng.github.io/:0
+[   18586ms] [WARNING] A matching frame for #user-profile-frame was missing from the response, transforming into full-page Visit. @ https://github.githubassets.com/assets/26533-4df1172b25427069.js:15

@@ -1,0 +1,37 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: 日本東京
+        - heading "Japan Tokyo" [level=1] [ref=e8]
+        - generic [ref=e9]: ✈️ 1/23 – 1/27
+      - generic [ref=e10]:
+        - generic [ref=e13]: 已同步
+        - button [ref=e14] [cursor=pointer]:
+          - img [ref=e15]
+  - main [ref=e19]:
+    - generic [ref=e359]:
+      - generic [ref=e360]:
+        - button "🧳 行李清單" [ref=e361] [cursor=pointer]
+        - button "🎁 伴手禮" [ref=e362] [cursor=pointer]
+      - generic [ref=e366]:
+        - generic [ref=e367]: 🧳
+        - generic [ref=e368]: 還沒有項目，點右下角 + 新增
+  - button [ref=e369] [cursor=pointer]:
+    - img [ref=e370]
+  - navigation [ref=e90]:
+    - button "行程" [ref=e91] [cursor=pointer]:
+      - img [ref=e92]
+      - generic [ref=e96]: 行程
+    - button "清單" [active] [ref=e97] [cursor=pointer]:
+      - img [ref=e98]
+      - generic [ref=e101]: 清單
+    - button "帳本" [ref=e102] [cursor=pointer]:
+      - img [ref=e103]
+      - generic [ref=e106]: 帳本
+    - button "分帳" [ref=e107] [cursor=pointer]:
+      - img [ref=e108]
+      - generic [ref=e112]: 分帳
+    - button "更多" [ref=e113] [cursor=pointer]:
+      - img [ref=e114]
+      - generic [ref=e118]: 更多

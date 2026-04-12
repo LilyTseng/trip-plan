@@ -1,0 +1,53 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: 日本東京
+        - heading "Japan Tokyo" [level=1] [ref=e8]
+        - generic [ref=e9]: ✈️ 1/23 – 1/27
+      - generic [ref=e10]:
+        - generic [ref=e13]: 已同步
+        - button [ref=e14] [cursor=pointer]:
+          - img [ref=e15]
+  - main [ref=e19]:
+    - generic [ref=e158]:
+      - generic [ref=e161]:
+        - img [ref=e162]
+        - textbox "搜尋行程..." [ref=e165]
+      - generic [ref=e166]:
+        - button "1/23 四" [ref=e167] [cursor=pointer]:
+          - generic [ref=e168]: 1/23
+          - generic [ref=e169]: 四
+        - button "1/24 五" [ref=e170] [cursor=pointer]:
+          - generic [ref=e171]: 1/24
+          - generic [ref=e172]: 五
+        - button "1/25 六" [ref=e173] [cursor=pointer]:
+          - generic [ref=e174]: 1/25
+          - generic [ref=e175]: 六
+        - button "1/26 日" [ref=e176] [cursor=pointer]:
+          - generic [ref=e177]: 1/26
+          - generic [ref=e178]: 日
+        - button "1/27 一" [ref=e179] [cursor=pointer]:
+          - generic [ref=e180]: 1/27
+          - generic [ref=e181]: 一
+      - generic [ref=e183]:
+        - generic [ref=e184]: 🗓️
+        - generic [ref=e185]: 還沒有行程，點右下角 + 新增
+  - button [ref=e186] [cursor=pointer]:
+    - img [ref=e187]
+  - navigation [ref=e90]:
+    - button "行程" [active] [ref=e91] [cursor=pointer]:
+      - img [ref=e92]
+      - generic [ref=e96]: 行程
+    - button "清單" [ref=e97] [cursor=pointer]:
+      - img [ref=e98]
+      - generic [ref=e101]: 清單
+    - button "帳本" [ref=e102] [cursor=pointer]:
+      - img [ref=e103]
+      - generic [ref=e106]: 帳本
+    - button "分帳" [ref=e107] [cursor=pointer]:
+      - img [ref=e108]
+      - generic [ref=e112]: 分帳
+    - button "更多" [ref=e113] [cursor=pointer]:
+      - img [ref=e114]
+      - generic [ref=e118]: 更多

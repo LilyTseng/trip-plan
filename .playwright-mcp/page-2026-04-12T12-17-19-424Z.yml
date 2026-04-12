@@ -1,0 +1,60 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: 日本東京
+        - heading "Japan Tokyo" [level=1] [ref=e8]
+        - generic [ref=e9]: ✈️ 1/23 – 1/27
+      - generic [ref=e10]:
+        - generic [ref=e13]: 已同步
+        - button [ref=e14] [cursor=pointer]:
+          - img [ref=e15]
+  - main [ref=e19]:
+    - generic [ref=e120]:
+      - generic [ref=e122]:
+        - generic [ref=e123]:
+          - button "✈️ 航班" [ref=e124] [cursor=pointer]
+          - button "🏨 住宿" [ref=e125] [cursor=pointer]
+        - generic [ref=e126]:
+          - button "+ 新增航班" [ref=e127] [cursor=pointer]
+          - generic [ref=e128]:
+            - generic [ref=e129]: ✈️
+            - generic [ref=e130]: 尚未新增航班資訊
+      - generic [ref=e131]:
+        - generic [ref=e132]: 目前旅遊
+        - generic [ref=e133]:
+          - generic [ref=e134]: 日本東京
+          - generic [ref=e135]: Japan Tokyo
+          - generic [ref=e136]: ✈️ 1/23 – 1/27
+        - button "管理旅遊" [ref=e137] [cursor=pointer]
+      - generic [ref=e138]:
+        - generic [ref=e139]: 分享行程
+        - generic [ref=e140]:
+          - button "產生分享連結" [ref=e141] [cursor=pointer]
+          - generic [ref=e142]: 分享連結給旅伴，即可即時同步編輯同一份行程
+      - generic [ref=e144]:
+        - generic [ref=e145]:
+          - generic [ref=e146]: 深色模式
+          - generic [ref=e147]: 切換深色 / 淺色主題
+        - button [ref=e148] [cursor=pointer]
+      - generic [ref=e150]:
+        - generic [ref=e151]: 雲端同步
+        - generic [ref=e154]:
+          - generic [ref=e155]: 已同步至雲端
+          - generic [ref=e156]: 所有成員即時共享同一份資料
+  - navigation [ref=e90]:
+    - button "行程" [ref=e91] [cursor=pointer]:
+      - img [ref=e92]
+      - generic [ref=e96]: 行程
+    - button "清單" [ref=e97] [cursor=pointer]:
+      - img [ref=e98]
+      - generic [ref=e101]: 清單
+    - button "帳本" [ref=e102] [cursor=pointer]:
+      - img [ref=e103]
+      - generic [ref=e106]: 帳本
+    - button "分帳" [ref=e107] [cursor=pointer]:
+      - img [ref=e108]
+      - generic [ref=e112]: 分帳
+    - button "更多" [active] [ref=e113] [cursor=pointer]:
+      - img [ref=e114]
+      - generic [ref=e118]: 更多

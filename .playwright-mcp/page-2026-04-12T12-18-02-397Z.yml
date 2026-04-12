@@ -1,0 +1,70 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: 日本東京
+        - heading "Japan Tokyo" [level=1] [ref=e8]
+        - generic [ref=e9]: ✈️ 1/23 – 1/27
+      - generic [ref=e10]:
+        - generic [ref=e13]: 已同步
+        - button [ref=e14] [cursor=pointer]:
+          - img [ref=e15]
+  - main [ref=e19]:
+    - generic [ref=e191]:
+      - generic [ref=e192]:
+        - generic [ref=e193]: 旅伴
+        - generic [ref=e194]:
+          - generic [ref=e195]:
+            - generic [ref=e196]: A
+            - button "移除旅伴" [ref=e197] [cursor=pointer]: ×
+          - generic [ref=e198]:
+            - generic [ref=e199]: B
+            - button "移除旅伴" [ref=e200] [cursor=pointer]: ×
+          - generic [ref=e201]:
+            - generic [ref=e202]: C
+            - button "移除旅伴" [ref=e203] [cursor=pointer]: ×
+          - generic [ref=e204]:
+            - textbox "新增旅伴" [ref=e205]
+            - button "新增旅伴" [ref=e206] [cursor=pointer]:
+              - generic [ref=e207]: +
+      - generic [ref=e208]:
+        - button "費用" [ref=e209] [cursor=pointer]
+        - button "結算" [ref=e210] [cursor=pointer]
+      - generic [ref=e211]:
+        - generic [ref=e212]:
+          - generic [ref=e213]:
+            - generic [ref=e214]: 旅行總花費
+            - generic [ref=e215]: NT$500
+          - generic [ref=e216]:
+            - generic [ref=e217]: 每人平均
+            - generic [ref=e218]: NT$167
+        - generic [ref=e219]: 共 1 筆 · 3 人
+      - generic [ref=e220]:
+        - button "+ 新增費用" [ref=e221] [cursor=pointer]
+        - generic [ref=e222]:
+          - generic [ref=e223]:
+            - generic [ref=e224]: 哈哈
+            - generic [ref=e226]: NT$500
+          - generic [ref=e227]: A 付款 · 2026-03-28
+          - generic [ref=e228]: 分攤：A、B、C（每人約 NT$167）
+          - generic [ref=e229]:
+            - button "編輯" [ref=e230] [cursor=pointer]:
+              - img [ref=e231]
+            - button "刪除" [ref=e233] [cursor=pointer]:
+              - img [ref=e234]
+  - navigation [ref=e90]:
+    - button "行程" [ref=e91] [cursor=pointer]:
+      - img [ref=e92]
+      - generic [ref=e96]: 行程
+    - button "清單" [ref=e97] [cursor=pointer]:
+      - img [ref=e98]
+      - generic [ref=e101]: 清單
+    - button "帳本" [ref=e102] [cursor=pointer]:
+      - img [ref=e103]
+      - generic [ref=e106]: 帳本
+    - button "分帳" [active] [ref=e107] [cursor=pointer]:
+      - img [ref=e108]
+      - generic [ref=e112]: 分帳
+    - button "更多" [ref=e113] [cursor=pointer]:
+      - img [ref=e114]
+      - generic [ref=e118]: 更多
