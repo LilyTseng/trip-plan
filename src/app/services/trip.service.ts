@@ -1,6 +1,7 @@
 import { Injectable, NgZone, inject } from '@angular/core';
 import { loadFirebase, type FirebaseInstance } from '../firebase.config';
 import { ChecklistItem, EventType, ExpenseItem, ItinEvent, Member, Settlement, SplitExpense, Trip } from '../models/types';
+import { UndoService } from './undo.service';
 
 const LOCAL_KEY  = 'trip_plan_v1';
 const FIRESTORE_DOC = 'main'; // 所有人共用同一份文件
@@ -30,6 +31,7 @@ export type SyncStatus = 'synced' | 'syncing' | 'offline';
 @Injectable({ providedIn: 'root' })
 export class TripService {
   private ngZone = inject(NgZone);
+  private undoSvc = inject(UndoService);
   private uid(): string { return `${Date.now()}_${Math.random().toString(16).slice(2)}`; }
   private readonly chineseDays = ['日','一','二','三','四','五','六'];
 
@@ -252,12 +254,23 @@ export class TripService {
 
   deleteTrip(id: string): void {
     if (this.trips.length <= 1) return;
+    const idx = this.trips.findIndex(t => t.id === id);
+    if (idx < 0) return;
+    const deleted = this.trips[idx];
+    const prevActiveId = this.activeTripId;
+    const prevActiveDate = this.activeDate;
     this.trips = this.trips.filter(t => t.id !== id);
     if (this.activeTripId === id) {
       this.activeTripId = this.trips[0].id;
       this.activeDate   = this.dates[0] ?? '';
     }
     this.save();
+    this.undoSvc.show(`已刪除「${deleted.name}」`, () => {
+      this.trips = [...this.trips.slice(0, idx), deleted, ...this.trips.slice(idx)];
+      this.activeTripId = prevActiveId;
+      this.activeDate = prevActiveDate;
+      this.save();
+    });
   }
 
   /* ── Date navigation ── */
@@ -289,8 +302,18 @@ export class TripService {
   }
 
   deleteItinEvent(dateKey: string, id: string): void {
-    this.itin[dateKey] = (this.itin[dateKey] ?? []).filter(x => x.id !== id);
+    const events = this.itin[dateKey] ?? [];
+    const idx = events.findIndex(x => x.id === id);
+    if (idx < 0) return;
+    const deleted = events[idx];
+    this.itin[dateKey] = events.filter(x => x.id !== id);
     this.save();
+    this.undoSvc.show(`已刪除「${deleted.title}」`, () => {
+      const cur = [...(this.itin[dateKey] ?? [])];
+      cur.splice(idx, 0, deleted);
+      this.itin[dateKey] = cur;
+      this.save();
+    });
   }
 
   /* ── Checklist CRUD ── */
@@ -308,9 +331,19 @@ export class TripService {
   }
 
   deleteChecklistItem(kind: 'packing' | 'gift', id: string): void {
+    const arr = kind === 'packing' ? this.packing : this.gifts;
+    const idx = arr.findIndex(x => x.id === id);
+    if (idx < 0) return;
+    const deleted = arr[idx];
     if (kind === 'packing') this.packing = this.packing.filter(x => x.id !== id);
     else this.gifts = this.gifts.filter(x => x.id !== id);
     this.save();
+    this.undoSvc.show(`已刪除「${deleted.label}」`, () => {
+      const cur = kind === 'packing' ? [...this.packing] : [...this.gifts];
+      cur.splice(idx, 0, deleted);
+      if (kind === 'packing') this.packing = cur; else this.gifts = cur;
+      this.save();
+    });
   }
 
   toggleChecklistDone(kind: 'packing' | 'gift', id: string): void {
@@ -358,8 +391,17 @@ export class TripService {
   }
 
   deleteSplitExpense(id: string): void {
+    const idx = this.splitExpenses.findIndex(x => x.id === id);
+    if (idx < 0) return;
+    const deleted = this.splitExpenses[idx];
     this.activeTrip.splitExpenses = this.splitExpenses.filter(x => x.id !== id);
     this.save();
+    this.undoSvc.show(`已刪除「${deleted.description}」`, () => {
+      const cur = [...this.activeTrip.splitExpenses];
+      cur.splice(idx, 0, deleted);
+      this.activeTrip.splitExpenses = cur;
+      this.save();
+    });
   }
 
   /* ── Settlement ── */
@@ -411,8 +453,17 @@ export class TripService {
   }
 
   deleteLedgerExpense(id: string): void {
+    const idx = this.ledgerExpenses.findIndex(x => x.id === id);
+    if (idx < 0) return;
+    const deleted = this.ledgerExpenses[idx];
     this.ledgerExpenses = this.ledgerExpenses.filter(x => x.id !== id);
     this.save();
+    this.undoSvc.show('已刪除記帳紀錄', () => {
+      const cur = [...this.ledgerExpenses];
+      cur.splice(idx, 0, deleted);
+      this.ledgerExpenses = cur;
+      this.save();
+    });
   }
 
   updateLedgerRate(rate: number): void {

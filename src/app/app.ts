@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { ChecklistItem, ItinEvent, SheetContext, Tab } from './models/types';
 import { TripService } from './services/trip.service';
+import { UndoService } from './services/undo.service';
 import { ItineraryComponent } from './components/itinerary/itinerary.component';
 import { ChecklistComponent } from './components/checklist/checklist.component';
 import { LedgerComponent } from './components/ledger/ledger.component';
@@ -18,6 +19,7 @@ import { SplitComponent } from './components/split/split.component';
 })
 export class AppComponent {
   tripSvc = inject(TripService);
+  undoSvc = inject(UndoService);
 
   activeTab: Tab = 'itinerary';
   checklistKind: 'packing' | 'gift' = 'packing';

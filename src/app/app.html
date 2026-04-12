@@ -191,3 +191,18 @@
   [editListContext]="editListContext"
   (closed)="onSheetClosed()"
 ></app-bottom-sheet>
+
+<!-- ── OFFLINE BANNER ── -->
+<div *ngIf="tripSvc.syncStatus === 'offline'"
+  class="fixed top-0 left-0 right-0 z-[100] bg-gray-700 text-white text-center text-xs font-bold py-1.5 max-w-[448px] mx-auto">
+  📡 目前離線，變更將在恢復連線後同步
+</div>
+
+<!-- ── UNDO SNACKBAR ── -->
+<div *ngIf="undoSvc.visible"
+  class="fixed bottom-[calc(68px+env(safe-area-inset-bottom,0px)+8px)] left-1/2 -translate-x-1/2 z-[90]
+         bg-[#323232] text-white rounded-xl px-4 py-3 flex items-center gap-3 shadow-lg
+         max-w-[400px] w-[calc(100%-32px)] animate-slide-up">
+  <span class="text-sm flex-1 truncate">{{ undoSvc.message }}</span>
+  <button class="text-[#FF896B] font-extrabold text-sm shrink-0" (click)="undoSvc.undo()">復原</button>
+</div>

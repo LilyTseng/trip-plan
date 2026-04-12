@@ -28,7 +28,11 @@
         </button>
       </div>
     </div>
-    <div *ngIf="members.length === 0" class="text-xs opacity-50 mt-2">先新增旅伴，才能記錄分帳</div>
+    <div *ngIf="members.length === 0" class="card bg-amber-50 border-amber-200 p-4 mt-3 text-center">
+      <div class="text-2xl mb-1">👥</div>
+      <div class="text-sm font-bold text-amber-800">先新增旅伴，才能開始分帳</div>
+      <div class="text-xs text-amber-600 mt-1">在上方輸入框輸入名字，按 Enter 新增</div>
+    </div>
   </div>
 
   <!-- Sub-nav pills -->
@@ -62,7 +66,10 @@
       需要至少 2 位旅伴才能新增費用
     </div>
 
-    <div *ngIf="expenses.length === 0" class="text-sm opacity-60">還沒有分帳紀錄</div>
+    <div *ngIf="expenses.length === 0 && members.length >= 2" class="text-center py-8 text-gray-300">
+      <div class="text-4xl mb-2">💰</div>
+      <div class="text-sm">還沒有分帳紀錄，點上方按鈕新增</div>
+    </div>
 
     <div class="card bg-white p-4 space-y-1.5" *ngFor="let exp of expenses">
       <div class="flex justify-between items-start gap-3">
