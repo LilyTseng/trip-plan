@@ -1,7 +1,7 @@
 import { Injectable, NgZone, inject } from '@angular/core';
 import { doc, setDoc, onSnapshot, Unsubscribe } from 'firebase/firestore';
-import { db } from '../firebase.config';
-import { ChecklistItem, EventType, ItinEvent, Member, Settlement, SplitExpense, Trip } from '../models/types';
+import { db, ensureAuth } from '../firebase.config';
+import { ChecklistItem, EventType, ExpenseItem, ItinEvent, Member, Settlement, SplitExpense, Trip } from '../models/types';
 
 const LOCAL_KEY  = 'trip_plan_v1';
 const FIRESTORE_DOC = 'main'; // 所有人共用同一份文件
@@ -12,6 +12,8 @@ interface StoredState {
   activeDate: string;
   packing: ChecklistItem[];
   gifts: ChecklistItem[];
+  ledgerExpenses: ExpenseItem[];
+  ledgerRate: number;
   updatedAt?: number;
 }
 
@@ -19,6 +21,8 @@ interface RoomData {
   trips: Trip[];
   packing: ChecklistItem[];
   gifts: ChecklistItem[];
+  ledgerExpenses: ExpenseItem[];
+  ledgerRate: number;
   updatedAt: number;
 }
 
@@ -36,6 +40,8 @@ export class TripService {
   activeDate = '';
   packing: ChecklistItem[] = [];
   gifts: ChecklistItem[] = [];
+  ledgerExpenses: ExpenseItem[] = [];
+  ledgerRate = 0.21;
 
   /* ── Cloud sync ── */
   syncStatus: SyncStatus = 'offline';
@@ -51,11 +57,16 @@ export class TripService {
       this.activeDate      = saved.activeDate;
       this.packing         = saved.packing;
       this.gifts           = saved.gifts;
+      this.ledgerExpenses  = saved.ledgerExpenses ?? [];
+      this.ledgerRate      = saved.ledgerRate ?? 0.21;
       this.localUpdatedAt  = saved.updatedAt ?? 0;
     } else {
       this.initDefaults();
     }
-    this.connectFirestore();
+    // 先匿名登入，成功後才連接 Firestore
+    ensureAuth()
+      .then(() => this.connectFirestore())
+      .catch(() => { this.syncStatus = 'offline'; });
   }
 
   private connectFirestore(): void {
@@ -80,7 +91,8 @@ export class TripService {
     try {
       await setDoc(doc(db, 'rooms', FIRESTORE_DOC), {
         trips: this.trips, packing: this.packing,
-        gifts: this.gifts, updatedAt: Date.now(),
+        gifts: this.gifts, ledgerExpenses: this.ledgerExpenses,
+        ledgerRate: this.ledgerRate, updatedAt: Date.now(),
       });
       this.syncStatus = 'synced';
     } catch { this.syncStatus = 'offline'; }
@@ -89,9 +101,11 @@ export class TripService {
   private applyRemoteData(data: RoomData): void {
     // 只有 Firestore 資料比本地新時才套用，避免重整後舊資料覆蓋新資料
     if ((data.updatedAt ?? 0) < this.localUpdatedAt) return;
-    this.trips   = data.trips   ?? this.trips;
-    this.packing = data.packing ?? this.packing;
-    this.gifts   = data.gifts   ?? this.gifts;
+    this.trips           = data.trips           ?? this.trips;
+    this.packing         = data.packing         ?? this.packing;
+    this.gifts           = data.gifts           ?? this.gifts;
+    this.ledgerExpenses  = data.ledgerExpenses  ?? this.ledgerExpenses;
+    this.ledgerRate      = data.ledgerRate      ?? this.ledgerRate;
     if (!this.trips.find(t => t.id === this.activeTripId)) {
       this.activeTripId = this.trips[0]?.id ?? '';
       this.activeDate   = Object.keys(this.trips[0]?.itin ?? {})[0] ?? '';
@@ -111,6 +125,7 @@ export class TripService {
     const state: StoredState = {
       trips: this.trips, activeTripId: this.activeTripId,
       activeDate: this.activeDate, packing: this.packing, gifts: this.gifts,
+      ledgerExpenses: this.ledgerExpenses, ledgerRate: this.ledgerRate,
       updatedAt: this.localUpdatedAt,
     };
     localStorage.setItem(LOCAL_KEY, JSON.stringify(state));
@@ -358,6 +373,25 @@ export class TripService {
       if (d.amount < 0.005) di++;
     }
     return result;
+  }
+
+  /* ── Ledger CRUD ── */
+  addLedgerExpense(jpy: string, twd: number): void {
+    this.ledgerExpenses = [
+      { id: this.uid(), jpy, twd, time: new Date().toLocaleString() },
+      ...this.ledgerExpenses,
+    ];
+    this.save();
+  }
+
+  deleteLedgerExpense(id: string): void {
+    this.ledgerExpenses = this.ledgerExpenses.filter(x => x.id !== id);
+    this.save();
+  }
+
+  updateLedgerRate(rate: number): void {
+    this.ledgerRate = rate;
+    this.save();
   }
 
   /* ── Time sorting ── */

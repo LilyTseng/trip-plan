@@ -1,17 +1,19 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ExpenseItem } from '../models/types';
+import { TripService } from './trip.service';
 
 @Injectable({ providedIn: 'root' })
 export class LedgerService {
-  private uid(): string {
-    return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
-  }
+  private trip = inject(TripService);
 
-  rate = 0.21;
   rateEdit = false;
   jpyInput = '';
-  expenses: ExpenseItem[] = [];
   readonly keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.', 'C'];
+
+  get rate(): number { return this.trip.ledgerRate; }
+  set rate(v: number) { this.trip.updateLedgerRate(v); }
+
+  get expenses(): ExpenseItem[] { return this.trip.ledgerExpenses; }
 
   get twd(): number {
     const jpy = Number.parseFloat(this.jpyInput || '0');
@@ -33,14 +35,11 @@ export class LedgerService {
   saveExpense(): void {
     const cleaned = this.jpyInput.trim();
     if (!cleaned) return;
-    this.expenses = [
-      { id: this.uid(), jpy: cleaned, twd: this.twd, time: new Date().toLocaleString() },
-      ...this.expenses,
-    ];
+    this.trip.addLedgerExpense(cleaned, this.twd);
     this.jpyInput = '';
   }
 
   deleteExpense(id: string): void {
-    this.expenses = this.expenses.filter(x => x.id !== id);
+    this.trip.deleteLedgerExpense(id);
   }
 }
