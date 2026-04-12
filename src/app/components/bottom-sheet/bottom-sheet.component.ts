@@ -28,6 +28,7 @@ export class BottomSheetComponent implements OnChanges {
   formUrl = '';
   formLabel = '';
   formPos = 1;
+  formMoveDate = ''; // 移動到其他天
 
   ngOnChanges(): void {
     if (!this.isOpen) return;
@@ -40,6 +41,7 @@ export class BottomSheetComponent implements OnChanges {
       this.formTime = ev.time;
       this.formTitle = ev.title;
       this.formUrl = ev.url ?? '';
+      this.formMoveDate = this.editItinContext.dateKey;
       this.formLabel = '';
     } else if (this.editListContext) {
       this.sheetStage = 'form';
@@ -103,7 +105,14 @@ export class BottomSheetComponent implements OnChanges {
       if (this.sheetMode === 'add') {
         this.trip.addItinEvent(dateKey, time, title, type, url);
       } else if (this.editItinContext) {
-        this.trip.updateItinEvent(dateKey, this.editItinContext.event.id, time, title, type, url);
+        const origDateKey = this.editItinContext.dateKey;
+        const targetDateKey = this.formMoveDate || origDateKey;
+        if (targetDateKey !== origDateKey) {
+          // 移動到其他天
+          this.trip.moveItinEvent(origDateKey, targetDateKey, this.editItinContext.event.id, time, title, type, url);
+        } else {
+          this.trip.updateItinEvent(dateKey, this.editItinContext.event.id, time, title, type, url);
+        }
       }
       this.close();
       return;
@@ -128,5 +137,6 @@ export class BottomSheetComponent implements OnChanges {
     this.formUrl = '';
     this.formLabel = '';
     this.formPos = 1;
+    this.formMoveDate = '';
   }
 }

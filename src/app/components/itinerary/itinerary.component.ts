@@ -36,6 +36,17 @@ export class ItineraryComponent implements OnDestroy {
   get activeDate() { return this.trip.activeDate; }
   get activeEvents() { return this.trip.getEvents(this.trip.activeDate); }
 
+  formatDate(d: string) { return this.trip.formatDateKey(d); }
+
+  /** 產生 Google Maps 多點路線連結 */
+  get mapsRouteUrl(): string | null {
+    const events = this.activeEvents.filter(e => e.url);
+    if (events.length < 2) return null;
+    // Extract place IDs or use URLs as waypoints
+    const waypoints = events.map(e => e.url!).join('/');
+    return `https://www.google.com/maps/dir/${waypoints}`;
+  }
+
   selectDate(d: string): void { this.trip.selectDate(d); }
   deleteEvent(id: string): void { this.trip.deleteItinEvent(this.trip.activeDate, id); }
 

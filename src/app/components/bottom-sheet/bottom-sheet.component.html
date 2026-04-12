@@ -128,6 +128,12 @@
           <div class="text-sm font-bold text-[#2E2E2E] mb-1">地圖連結（可留空）</div>
           <input class="card bg-white w-full px-4 py-3" placeholder="貼 Google Maps 連結" [(ngModel)]="formUrl" />
         </div>
+        <div *ngIf="sheetMode === 'edit' && editItinContext">
+          <div class="text-sm font-bold text-[#2E2E2E] mb-1">所屬日期</div>
+          <select class="card bg-white w-full px-4 py-3" [(ngModel)]="formMoveDate">
+            <option *ngFor="let d of trip.dates" [value]="d">{{ trip.formatDateKey(d) }}</option>
+          </select>
+        </div>
       </div>
 
       <div *ngIf="sheetKind === 'packing' || sheetKind === 'gift'" class="space-y-3">

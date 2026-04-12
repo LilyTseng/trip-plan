@@ -378,6 +378,14 @@ export class TripService {
     this.save();
   }
 
+  moveItinEvent(fromDate: string, toDate: string, id: string, time: string, title: string, type: EventType, url?: string): void {
+    this.itin[fromDate] = (this.itin[fromDate] ?? []).filter(x => x.id !== id);
+    const target = [...(this.itin[toDate] ?? [])];
+    target.push({ id, time, title, type, url: url || undefined });
+    this.itin[toDate] = this.sortByTime(target);
+    this.save();
+  }
+
   updateItinEvent(dateKey: string, id: string, time: string, title: string, type: EventType, url?: string): void {
     const cur = [...(this.itin[dateKey] ?? [])];
     const idx = cur.findIndex(x => x.id === id);
