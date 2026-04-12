@@ -141,6 +141,31 @@
         </div>
       </div>
 
+      <!-- Flight API key -->
+      <div class="card p-5">
+        <div class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">航班查詢 API</div>
+        <div *ngIf="flightLookupSvc.hasApiKey" class="flex items-center gap-3">
+          <div class="w-3 h-3 rounded-full bg-green-400 shrink-0"></div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-bold" [style.color]="'var(--text-primary)'">API Key 已設定</div>
+            <div class="text-xs mt-0.5" [style.color]="'var(--text-secondary)'">可在新增航班時自動查詢航班資訊</div>
+          </div>
+          <button class="text-xs text-red-400 font-bold shrink-0" (click)="flightLookupSvc.setApiKey(''); apiKeyInput = ''">清除</button>
+        </div>
+        <div *ngIf="!flightLookupSvc.hasApiKey" class="space-y-2">
+          <div class="text-xs" [style.color]="'var(--text-secondary)'">
+            輸入 RapidAPI Key（AeroDataBox）即可在新增航班時自動填入航班資訊
+          </div>
+          <div class="flex gap-2">
+            <input class="card flex-1 px-3 py-2 text-xs" type="password" placeholder="RapidAPI Key"
+              [(ngModel)]="apiKeyInput" />
+            <button class="btn-primary px-4 py-2 rounded-xl text-sm font-bold shrink-0"
+              [style.opacity]="apiKeyInput.trim() ? '1' : '0.5'"
+              (click)="flightLookupSvc.setApiKey(apiKeyInput)">儲存</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Sync status -->
       <div class="card p-5">
         <div class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">雲端同步</div>

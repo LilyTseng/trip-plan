@@ -59,6 +59,8 @@ export interface FlightInfo {
   arrival: string;     // "YYYY-MM-DD HH:mm"
   departAirport: string;
   arriveAirport: string;
+  departTerminal?: string;
+  arriveTerminal?: string;
   note?: string;
 }
 

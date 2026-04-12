@@ -1,17 +1,19 @@
-import { Component, EventEmitter, Output, inject, ElementRef, NgZone, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, Output, ViewChild, inject, ElementRef, NgZone, OnDestroy } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ItinEvent } from '../../models/types';
+import { FlightInfo, HotelInfo, ItinEvent } from '../../models/types';
 import { TripService } from '../../services/trip.service';
+import { TravelInfoComponent } from '../travel-info/travel-info.component';
 
 @Component({
   selector: 'app-itinerary',
   standalone: true,
-  imports: [NgFor, NgIf, FormsModule],
+  imports: [NgFor, NgIf, FormsModule, TravelInfoComponent],
   templateUrl: './itinerary.component.html',
 })
 export class ItineraryComponent implements OnDestroy {
   @Output() editEvent = new EventEmitter<{ dateKey: string; event: ItinEvent }>();
+  @ViewChild('travelInfo') travelInfo!: TravelInfoComponent;
 
   trip = inject(TripService);
   private elRef = inject(ElementRef);
@@ -60,8 +62,17 @@ export class ItineraryComponent implements OnDestroy {
   get dates() { return this.trip.dates; }
   get activeDate() { return this.trip.activeDate; }
   get activeEvents() { return this.trip.getEvents(this.trip.activeDate); }
+  get activeFlights(): FlightInfo[] { return this.trip.getFlightsForDate(this.activeDate); }
+  get activeHotel() { return this.trip.getHotelForDate(this.activeDate); }
 
   formatDate(d: string) { return this.trip.formatDateKey(d); }
+
+  formatFlightTime(dt: string): string {
+    if (!dt) return '';
+    const d = new Date(dt);
+    if (isNaN(d.getTime())) return dt;
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  }
 
   /** 當日花費（TWD） */
   dayExpense(dateKey: string): number {
@@ -81,6 +92,14 @@ export class ItineraryComponent implements OnDestroy {
 
   selectDate(d: string): void { this.trip.selectDate(d); }
   deleteEvent(id: string): void { this.trip.deleteItinEvent(this.trip.activeDate, id); }
+
+  /* ── Flight/Hotel actions ── */
+  addFlight(): void { this.travelInfo.openAddFlight(); }
+  editFlight(f: FlightInfo): void { this.travelInfo.openEditFlight(f); }
+  deleteFlight(id: string): void { this.trip.deleteFlight(id); }
+  addHotel(): void { this.travelInfo.openAddHotel(); }
+  editHotel(h: HotelInfo): void { this.travelInfo.openEditHotel(h); }
+  deleteHotel(id: string): void { this.trip.deleteHotel(id); }
 
   /* ── Long-press start ── */
   onPointerDown(ev: TouchEvent | MouseEvent, event: ItinEvent, cardEl: HTMLElement): void {

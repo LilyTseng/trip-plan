@@ -523,6 +523,14 @@ export class TripService {
     });
   }
 
+  /** 取得某天的航班（用 departure 日期比對） */
+  getFlightsForDate(dateKey: string): FlightInfo[] {
+    return this.flights.filter(f => {
+      if (!f.departure) return false;
+      return f.departure.slice(0, 10) === dateKey;
+    });
+  }
+
   /* ── Hotel CRUD ── */
   get hotels(): HotelInfo[] { return this.activeTrip.hotels ?? []; }
   set hotels(v: HotelInfo[]) { this.activeTrip.hotels = v; }
@@ -550,6 +558,22 @@ export class TripService {
       this.hotels = cur;
       this.save();
     });
+  }
+
+  /** 取得某天住的飯店（checkIn <= dateKey < checkOut） */
+  getHotelForDate(dateKey: string): (HotelInfo & { nightNum: number; totalNights: number; isCheckIn: boolean; isCheckOut: boolean }) | null {
+    for (const h of this.hotels) {
+      if (dateKey >= h.checkIn && dateKey < h.checkOut) {
+        const nightNum = Math.round((new Date(dateKey).getTime() - new Date(h.checkIn).getTime()) / 86400000) + 1;
+        const totalNights = Math.round((new Date(h.checkOut).getTime() - new Date(h.checkIn).getTime()) / 86400000);
+        return { ...h, nightNum, totalNights, isCheckIn: dateKey === h.checkIn, isCheckOut: false };
+      }
+      if (dateKey === h.checkOut) {
+        const totalNights = Math.round((new Date(h.checkOut).getTime() - new Date(h.checkIn).getTime()) / 86400000);
+        return { ...h, nightNum: totalNights, totalNights, isCheckIn: false, isCheckOut: true };
+      }
+    }
+    return null;
   }
 
   /* ── Member CRUD ── */

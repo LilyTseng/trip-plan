@@ -1,4 +1,4 @@
-<div class="space-y-4">
+<div *ngIf="listVisible" class="space-y-4">
 
   <!-- Sub-nav pills -->
   <div class="flex gap-2">
@@ -39,9 +39,9 @@
                 <span *ngIf="f.airline" class="text-xs text-gray-400">{{ f.airline }}</span>
               </div>
               <div class="flex items-center gap-2 text-sm font-bold text-[#1A1A1A]">
-                <span>{{ f.departAirport }}</span>
+                <span>{{ f.departAirport }}<span *ngIf="f.departTerminal" class="text-xs font-normal text-gray-400 ml-0.5">{{ f.departTerminal }}</span></span>
                 <svg class="w-4 h-4 text-gray-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-                <span>{{ f.arriveAirport }}</span>
+                <span>{{ f.arriveAirport }}<span *ngIf="f.arriveTerminal" class="text-xs font-normal text-gray-400 ml-0.5">{{ f.arriveTerminal }}</span></span>
               </div>
               <div *ngIf="f.departure || f.arrival" class="text-xs text-gray-400 mt-1">
                 <span *ngIf="f.departure">{{ formatDateTime(f.departure) }}</span>
@@ -75,9 +75,9 @@
                 <span *ngIf="f.airline" class="text-xs text-gray-400">{{ f.airline }}</span>
               </div>
               <div class="flex items-center gap-2 text-sm font-bold text-[#1A1A1A]">
-                <span>{{ f.departAirport }}</span>
+                <span>{{ f.departAirport }}<span *ngIf="f.departTerminal" class="text-xs font-normal text-gray-400 ml-0.5">{{ f.departTerminal }}</span></span>
                 <svg class="w-4 h-4 text-gray-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-                <span>{{ f.arriveAirport }}</span>
+                <span>{{ f.arriveAirport }}<span *ngIf="f.arriveTerminal" class="text-xs font-normal text-gray-400 ml-0.5">{{ f.arriveTerminal }}</span></span>
               </div>
               <div *ngIf="f.departure || f.arrival" class="text-xs text-gray-400 mt-1">
                 <span *ngIf="f.departure">{{ formatDateTime(f.departure) }}</span>
@@ -180,14 +180,42 @@
           <input class="card bg-white w-full px-4 py-3 text-sm" placeholder="例：NH852" [(ngModel)]="fFlightNo" />
         </div>
       </div>
+      <!-- Flight lookup -->
+      <div *ngIf="flightLookup.hasApiKey" class="flex gap-2 items-end">
+        <div class="flex-1">
+          <div class="text-sm font-bold text-[#2E2E2E] mb-1">查詢日期</div>
+          <input class="card bg-white w-full px-4 py-3 text-sm" type="date" [(ngModel)]="fLookupDate" />
+        </div>
+        <button
+          class="btn-primary px-4 py-3 rounded-xl text-sm font-bold shrink-0 flex items-center gap-1.5"
+          [style.opacity]="fFlightNo.trim() && fLookupDate && !lookupLoading ? '1' : '0.5'"
+          (click)="lookupFlight()">
+          <svg *ngIf="!lookupLoading" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+          </svg>
+          <span *ngIf="lookupLoading" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+          查詢航班
+        </button>
+      </div>
+      <div *ngIf="lookupError" class="text-xs text-red-500 -mt-2">{{ lookupError }}</div>
       <div class="flex gap-2">
         <div class="flex-1">
           <div class="text-sm font-bold text-[#2E2E2E] mb-1">出發機場</div>
           <input class="card bg-white w-full px-4 py-3 text-sm" placeholder="例：TPE" [(ngModel)]="fDepartAirport" />
         </div>
+        <div class="w-20">
+          <div class="text-sm font-bold text-[#2E2E2E] mb-1">航廈</div>
+          <input class="card bg-white w-full px-4 py-3 text-sm" placeholder="T1" [(ngModel)]="fDepartTerminal" />
+        </div>
+      </div>
+      <div class="flex gap-2">
         <div class="flex-1">
           <div class="text-sm font-bold text-[#2E2E2E] mb-1">抵達機場</div>
           <input class="card bg-white w-full px-4 py-3 text-sm" placeholder="例：NRT" [(ngModel)]="fArriveAirport" />
+        </div>
+        <div class="w-20">
+          <div class="text-sm font-bold text-[#2E2E2E] mb-1">航廈</div>
+          <input class="card bg-white w-full px-4 py-3 text-sm" placeholder="T3" [(ngModel)]="fArriveTerminal" />
         </div>
       </div>
       <div class="flex gap-2">

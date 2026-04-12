@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FlightInfo, HotelInfo } from '../../models/types';
 import { TripService } from '../../services/trip.service';
+import { FlightLookupService } from '../../services/flight-lookup.service';
 
 type InfoView = 'flights' | 'hotels';
 
@@ -13,7 +14,13 @@ type InfoView = 'flights' | 'hotels';
   templateUrl: './travel-info.component.html',
 })
 export class TravelInfoComponent {
+  @Input() listVisible = true;
+
   trip = inject(TripService);
+  flightLookup = inject(FlightLookupService);
+  lookupLoading = false;
+  lookupError = '';
+  fLookupDate = '';
 
   activeView: InfoView = 'flights';
   modalOpen = false;
@@ -28,6 +35,8 @@ export class TravelInfoComponent {
   fArrival = '';
   fDepartAirport = '';
   fArriveAirport = '';
+  fDepartTerminal = '';
+  fArriveTerminal = '';
   fNote = '';
 
   // Hotel form
@@ -55,7 +64,11 @@ export class TravelInfoComponent {
     this.fArrival = '';
     this.fDepartAirport = '';
     this.fArriveAirport = '';
+    this.fDepartTerminal = '';
+    this.fArriveTerminal = '';
     this.fNote = '';
+    this.fLookupDate = this.trip.activeTrip.startDate;
+    this.lookupError = '';
     this.modalOpen = true;
   }
 
@@ -69,7 +82,11 @@ export class TravelInfoComponent {
     this.fArrival = f.arrival;
     this.fDepartAirport = f.departAirport;
     this.fArriveAirport = f.arriveAirport;
+    this.fDepartTerminal = f.departTerminal ?? '';
+    this.fArriveTerminal = f.arriveTerminal ?? '';
     this.fNote = f.note ?? '';
+    this.fLookupDate = f.departure ? f.departure.substring(0, 10) : this.trip.activeTrip.startDate;
+    this.lookupError = '';
     this.modalOpen = true;
   }
 
@@ -87,6 +104,8 @@ export class TravelInfoComponent {
       arrival: this.fArrival,
       departAirport: this.fDepartAirport.trim(),
       arriveAirport: this.fArriveAirport.trim(),
+      departTerminal: this.fDepartTerminal.trim() || undefined,
+      arriveTerminal: this.fArriveTerminal.trim() || undefined,
       note: this.fNote.trim() || undefined,
     };
     if (this.editingId) {
@@ -151,6 +170,31 @@ export class TravelInfoComponent {
   closeModal(): void {
     this.modalOpen = false;
     this.editingId = null;
+  }
+
+  /* ── Flight lookup ── */
+  async lookupFlight(): Promise<void> {
+    if (!this.fFlightNo.trim() || !this.fLookupDate) return;
+    this.lookupLoading = true;
+    this.lookupError = '';
+    try {
+      const result = await this.flightLookup.lookup(this.fFlightNo.trim(), this.fLookupDate);
+      if (result) {
+        this.fAirline = result.airline || this.fAirline;
+        this.fFlightNo = result.flightNo || this.fFlightNo;
+        this.fDepartAirport = result.departAirport || this.fDepartAirport;
+        this.fArriveAirport = result.arriveAirport || this.fArriveAirport;
+        this.fDepartTerminal = result.departTerminal ?? this.fDepartTerminal;
+        this.fArriveTerminal = result.arriveTerminal ?? this.fArriveTerminal;
+        this.fDeparture = result.departure || this.fDeparture;
+        this.fArrival = result.arrival || this.fArrival;
+      } else {
+        this.lookupError = '查無此航班，請確認航班號與日期';
+      }
+    } catch {
+      this.lookupError = '查詢失敗，請稍後再試';
+    }
+    this.lookupLoading = false;
   }
 
   /* ── Helpers ── */

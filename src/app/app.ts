@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { NgIf } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ChecklistItem, ItinEvent, SheetContext, Tab } from './models/types';
 import { TripService } from './services/trip.service';
 import { UndoService } from './services/undo.service';
@@ -10,17 +11,20 @@ import { BottomSheetComponent } from './components/bottom-sheet/bottom-sheet.com
 import { TripManagerComponent } from './components/trip-manager/trip-manager.component';
 import { SplitComponent } from './components/split/split.component';
 import { TravelInfoComponent } from './components/travel-info/travel-info.component';
+import { FlightLookupService } from './services/flight-lookup.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [NgIf, ItineraryComponent, ChecklistComponent, LedgerComponent, BottomSheetComponent, TripManagerComponent, SplitComponent, TravelInfoComponent],
+  imports: [NgIf, FormsModule, ItineraryComponent, ChecklistComponent, LedgerComponent, BottomSheetComponent, TripManagerComponent, SplitComponent, TravelInfoComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class AppComponent {
   tripSvc = inject(TripService);
   undoSvc = inject(UndoService);
+  flightLookupSvc = inject(FlightLookupService);
+  apiKeyInput = '';
 
   activeTab: Tab = 'itinerary';
   checklistKind: 'packing' | 'gift' = 'packing';
