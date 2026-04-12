@@ -13,5 +13,5 @@ deploy: build
 	cp -r dist/trip-planning-clean/browser/* docs/
 	cp docs/index.html docs/404.html
 	git add docs/
-	git commit -m "chore: rebuild docs/ for deployment"
+	git diff --cached --quiet docs/ || git commit -m "chore: rebuild docs/ for deployment"
 	git push origin main
