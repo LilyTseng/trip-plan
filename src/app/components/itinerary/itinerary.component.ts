@@ -1,12 +1,13 @@
 import { Component, EventEmitter, Output, inject, ElementRef, NgZone, OnDestroy } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ItinEvent } from '../../models/types';
 import { TripService } from '../../services/trip.service';
 
 @Component({
   selector: 'app-itinerary',
   standalone: true,
-  imports: [NgFor, NgIf],
+  imports: [NgFor, NgIf, FormsModule],
   templateUrl: './itinerary.component.html',
 })
 export class ItineraryComponent implements OnDestroy {
@@ -15,6 +16,30 @@ export class ItineraryComponent implements OnDestroy {
   trip = inject(TripService);
   private elRef = inject(ElementRef);
   private ngZone = inject(NgZone);
+
+  /* ── Search ── */
+  searchQuery = '';
+  searchOpen = false;
+
+  get searchResults(): { dateKey: string; dateLabel: string; event: ItinEvent }[] {
+    const q = this.searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    const results: { dateKey: string; dateLabel: string; event: ItinEvent }[] = [];
+    for (const d of this.dates) {
+      for (const e of this.trip.getEvents(d)) {
+        if (e.title.toLowerCase().includes(q) || e.type.toLowerCase().includes(q)) {
+          results.push({ dateKey: d, dateLabel: this.formatDate(d), event: e });
+        }
+      }
+    }
+    return results;
+  }
+
+  goToSearchResult(dateKey: string): void {
+    this.trip.selectDate(dateKey);
+    this.searchQuery = '';
+    this.searchOpen = false;
+  }
 
   /* ── Drag state ── */
   dragging = false;

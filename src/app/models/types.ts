@@ -50,6 +50,28 @@ export interface Settlement {
   amount: number;
 }
 
+export interface FlightInfo {
+  id: string;
+  direction: 'outbound' | 'return';
+  airline: string;
+  flightNo: string;
+  departure: string;   // "YYYY-MM-DD HH:mm"
+  arrival: string;     // "YYYY-MM-DD HH:mm"
+  departAirport: string;
+  arriveAirport: string;
+  note?: string;
+}
+
+export interface HotelInfo {
+  id: string;
+  name: string;
+  checkIn: string;   // "YYYY-MM-DD"
+  checkOut: string;   // "YYYY-MM-DD"
+  address?: string;
+  note?: string;
+  url?: string;
+}
+
 export interface Trip {
   id: string;
   name: string;
@@ -61,4 +83,6 @@ export interface Trip {
   members: Member[];
   splitExpenses: SplitExpense[];
   settledPairKeys: string[]; // "${from}::${to}" 代表該筆已結清
+  flights: FlightInfo[];
+  hotels: HotelInfo[];
 }

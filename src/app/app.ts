@@ -9,11 +9,12 @@ import { LedgerComponent } from './components/ledger/ledger.component';
 import { BottomSheetComponent } from './components/bottom-sheet/bottom-sheet.component';
 import { TripManagerComponent } from './components/trip-manager/trip-manager.component';
 import { SplitComponent } from './components/split/split.component';
+import { TravelInfoComponent } from './components/travel-info/travel-info.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [NgIf, ItineraryComponent, ChecklistComponent, LedgerComponent, BottomSheetComponent, TripManagerComponent, SplitComponent],
+  imports: [NgIf, ItineraryComponent, ChecklistComponent, LedgerComponent, BottomSheetComponent, TripManagerComponent, SplitComponent, TravelInfoComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
@@ -27,6 +28,50 @@ export class AppComponent {
   tripManagerOpen = false;
   editItinContext: { dateKey: string; event: ItinEvent } | null = null;
   editListContext: { kind: 'packing' | 'gift'; item: ChecklistItem } | null = null;
+  darkMode = false;
+  shareLink = '';
+  shareCopied = false;
+
+  constructor() {
+    const saved = localStorage.getItem('trip_plan_theme');
+    if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      this.darkMode = true;
+    }
+    this.applyTheme();
+  }
+
+  toggleDarkMode(): void {
+    this.darkMode = !this.darkMode;
+    localStorage.setItem('trip_plan_theme', this.darkMode ? 'dark' : 'light');
+    this.applyTheme();
+  }
+
+  private applyTheme(): void {
+    document.documentElement.setAttribute('data-theme', this.darkMode ? 'dark' : 'light');
+  }
+
+  generateShareLink(): void {
+    this.shareLink = this.tripSvc.getShareLink();
+    this.shareCopied = false;
+  }
+
+  async copyShareLink(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(this.shareLink);
+      this.shareCopied = true;
+      setTimeout(() => { this.shareCopied = false; }, 2000);
+    } catch {
+      // Fallback for older browsers
+      const input = document.createElement('input');
+      input.value = this.shareLink;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      document.body.removeChild(input);
+      this.shareCopied = true;
+      setTimeout(() => { this.shareCopied = false; }, 2000);
+    }
+  }
 
   private readonly cnToEn: [RegExp, string][] = [
     [/日本/g, 'Japan'], [/東京/g, 'Tokyo'], [/大阪/g, 'Osaka'],

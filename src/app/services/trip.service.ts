@@ -1,10 +1,15 @@
 import { Injectable, NgZone, inject } from '@angular/core';
 import { loadFirebase, type FirebaseInstance } from '../firebase.config';
-import { ChecklistItem, EventType, ExpenseItem, ItinEvent, Member, Settlement, SplitExpense, Trip } from '../models/types';
+import { ChecklistItem, EventType, ExpenseItem, FlightInfo, HotelInfo, ItinEvent, Member, Settlement, SplitExpense, Trip } from '../models/types';
 import { UndoService } from './undo.service';
 
 const LOCAL_KEY  = 'trip_plan_v2'; // v2: ISO date keys + per-trip checklists
-const FIRESTORE_DOC = 'main';
+
+function getRoomId(): string {
+  const hash = window.location.hash.replace('#', '').trim();
+  if (hash && /^[a-zA-Z0-9_-]+$/.test(hash)) return hash;
+  return 'main';
+}
 
 interface StoredState {
   trips: Trip[];
@@ -40,6 +45,23 @@ export class TripService {
 
   /* ── Cloud sync ── */
   syncStatus: SyncStatus = 'offline';
+  roomId = getRoomId();
+
+  /** Generate a shareable link. Creates a unique room if currently on 'main'. */
+  getShareLink(): string {
+    if (this.roomId === 'main') {
+      // Generate a new room ID and reconnect
+      this.roomId = this.uid().replace(/_/g, '').slice(0, 12);
+      window.location.hash = this.roomId;
+      // Push current state to the new room
+      if (this.unsubFirestore) this.unsubFirestore();
+      this.pushToFirestore();
+      this.connectFirestore();
+    }
+    const base = window.location.origin + window.location.pathname;
+    return `${base}#${this.roomId}`;
+  }
+
   private firebase: FirebaseInstance | null = null;
   private firestoreMod: typeof import('firebase/firestore') | null = null;
   private unsubFirestore: (() => void) | null = null;
@@ -161,7 +183,7 @@ export class TripService {
     const { db } = this.firebase;
     this.syncStatus = 'syncing';
     this.unsubFirestore = onSnapshot(
-      doc(db, 'rooms', FIRESTORE_DOC),
+      doc(db, 'rooms', this.roomId),
       (snap) => {
         if (snap.metadata.hasPendingWrites) return;
         if (!snap.exists()) { this.pushToFirestore(); return; }
@@ -181,7 +203,7 @@ export class TripService {
     const { db } = this.firebase;
     this.syncStatus = 'syncing';
     try {
-      await setDoc(doc(db, 'rooms', FIRESTORE_DOC), {
+      await setDoc(doc(db, 'rooms', this.roomId), {
         trips: this.trips,
         ledgerExpenses: this.ledgerExpenses,
         ledgerRate: this.ledgerRate,
@@ -268,6 +290,7 @@ export class TripService {
         { id: this.uid(), label: '朋友伴手禮',     done: false },
       ],
       members: [], splitExpenses: [], settledPairKeys: [],
+      flights: [], hotels: [],
     };
     this.trips        = [defaultTrip];
     this.activeTripId = defaultTrip.id;
@@ -340,6 +363,7 @@ export class TripService {
       id: this.uid(), name, startDate, endDate, itin,
       packing: [], gifts: [],
       members: [], splitExpenses: [], settledPairKeys: [],
+      flights: [], hotels: [],
     };
     this.trips = [...this.trips, trip];
     this.save();
@@ -468,6 +492,64 @@ export class TripService {
     const toggle = (arr: ChecklistItem[]) => arr.map(x => x.id === id ? { ...x, done: !x.done } : x);
     if (kind === 'packing') this.packing = toggle(this.packing); else this.gifts = toggle(this.gifts);
     this.save();
+  }
+
+  /* ── Flight CRUD ── */
+  get flights(): FlightInfo[] { return this.activeTrip.flights ?? []; }
+  set flights(v: FlightInfo[]) { this.activeTrip.flights = v; }
+
+  addFlight(f: Omit<FlightInfo, 'id'>): void {
+    this.flights = [...this.flights, { ...f, id: this.uid() }];
+    this.save();
+  }
+
+  updateFlight(id: string, f: Partial<FlightInfo>): void {
+    this.flights = this.flights.map(x => x.id === id ? { ...x, ...f } : x);
+    this.save();
+  }
+
+  deleteFlight(id: string): void {
+    const arr = this.flights;
+    const idx = arr.findIndex(x => x.id === id);
+    if (idx < 0) return;
+    const deleted = arr[idx];
+    this.flights = arr.filter(x => x.id !== id);
+    this.save();
+    this.undoSvc.show(`已刪除航班 ${deleted.flightNo}`, () => {
+      const cur = [...this.flights];
+      cur.splice(idx, 0, deleted);
+      this.flights = cur;
+      this.save();
+    });
+  }
+
+  /* ── Hotel CRUD ── */
+  get hotels(): HotelInfo[] { return this.activeTrip.hotels ?? []; }
+  set hotels(v: HotelInfo[]) { this.activeTrip.hotels = v; }
+
+  addHotel(h: Omit<HotelInfo, 'id'>): void {
+    this.hotels = [...this.hotels, { ...h, id: this.uid() }];
+    this.save();
+  }
+
+  updateHotel(id: string, h: Partial<HotelInfo>): void {
+    this.hotels = this.hotels.map(x => x.id === id ? { ...x, ...h } : x);
+    this.save();
+  }
+
+  deleteHotel(id: string): void {
+    const arr = this.hotels;
+    const idx = arr.findIndex(x => x.id === id);
+    if (idx < 0) return;
+    const deleted = arr[idx];
+    this.hotels = arr.filter(x => x.id !== id);
+    this.save();
+    this.undoSvc.show(`已刪除「${deleted.name}」`, () => {
+      const cur = [...this.hotels];
+      cur.splice(idx, 0, deleted);
+      this.hotels = cur;
+      this.save();
+    });
   }
 
   /* ── Member CRUD ── */

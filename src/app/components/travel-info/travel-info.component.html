@@ -1,0 +1,252 @@
+<div class="space-y-4">
+
+  <!-- Sub-nav pills -->
+  <div class="flex gap-2">
+    <button
+      class="px-4 py-2 rounded-full text-sm font-bold border transition"
+      [style.background]="activeView === 'flights' ? '#FF5A5F' : 'var(--bg-card)'"
+      [style.color]="activeView === 'flights' ? 'white' : 'var(--text-primary)'"
+      [style.borderColor]="activeView === 'flights' ? '#FF5A5F' : 'var(--border-card)'"
+      (click)="activeView = 'flights'"
+    >✈️ 航班</button>
+    <button
+      class="px-4 py-2 rounded-full text-sm font-bold border transition"
+      [style.background]="activeView === 'hotels' ? '#FF5A5F' : 'var(--bg-card)'"
+      [style.color]="activeView === 'hotels' ? 'white' : 'var(--text-primary)'"
+      [style.borderColor]="activeView === 'hotels' ? '#FF5A5F' : 'var(--border-card)'"
+      (click)="activeView = 'hotels'"
+    >🏨 住宿</button>
+  </div>
+
+  <!-- ══ FLIGHTS VIEW ══ -->
+  <div *ngIf="activeView === 'flights'" class="space-y-3">
+    <button class="w-full btn-primary py-3 rounded-full font-extrabold" (click)="openAddFlight()">+ 新增航班</button>
+
+    <div *ngIf="flights.length === 0" class="text-center py-8 text-gray-300">
+      <div class="text-4xl mb-2">✈️</div>
+      <div class="text-sm">尚未新增航班資訊</div>
+    </div>
+
+    <!-- Outbound -->
+    <div *ngIf="outboundFlights.length > 0">
+      <div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">去程</div>
+      <div class="space-y-2">
+        <div *ngFor="let f of outboundFlights" class="card bg-white p-4">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs font-bold text-[#FF5A5F] bg-[#FF5A5F]/10 px-2 py-0.5 rounded-full">{{ f.flightNo }}</span>
+                <span *ngIf="f.airline" class="text-xs text-gray-400">{{ f.airline }}</span>
+              </div>
+              <div class="flex items-center gap-2 text-sm font-bold text-[#1A1A1A]">
+                <span>{{ f.departAirport }}</span>
+                <svg class="w-4 h-4 text-gray-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                <span>{{ f.arriveAirport }}</span>
+              </div>
+              <div *ngIf="f.departure || f.arrival" class="text-xs text-gray-400 mt-1">
+                <span *ngIf="f.departure">{{ formatDateTime(f.departure) }}</span>
+                <span *ngIf="f.departure && f.arrival"> → </span>
+                <span *ngIf="f.arrival">{{ formatDateTime(f.arrival) }}</span>
+              </div>
+              <div *ngIf="f.note" class="text-xs text-gray-400 mt-1">{{ f.note }}</div>
+            </div>
+            <div class="flex gap-1 shrink-0">
+              <button class="icon-btn" (click)="openEditFlight(f)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+              </button>
+              <button class="icon-btn" (click)="deleteFlight(f.id)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Return -->
+    <div *ngIf="returnFlights.length > 0">
+      <div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">回程</div>
+      <div class="space-y-2">
+        <div *ngFor="let f of returnFlights" class="card bg-white p-4">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{{ f.flightNo }}</span>
+                <span *ngIf="f.airline" class="text-xs text-gray-400">{{ f.airline }}</span>
+              </div>
+              <div class="flex items-center gap-2 text-sm font-bold text-[#1A1A1A]">
+                <span>{{ f.departAirport }}</span>
+                <svg class="w-4 h-4 text-gray-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                <span>{{ f.arriveAirport }}</span>
+              </div>
+              <div *ngIf="f.departure || f.arrival" class="text-xs text-gray-400 mt-1">
+                <span *ngIf="f.departure">{{ formatDateTime(f.departure) }}</span>
+                <span *ngIf="f.departure && f.arrival"> → </span>
+                <span *ngIf="f.arrival">{{ formatDateTime(f.arrival) }}</span>
+              </div>
+              <div *ngIf="f.note" class="text-xs text-gray-400 mt-1">{{ f.note }}</div>
+            </div>
+            <div class="flex gap-1 shrink-0">
+              <button class="icon-btn" (click)="openEditFlight(f)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+              </button>
+              <button class="icon-btn" (click)="deleteFlight(f.id)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ HOTELS VIEW ══ -->
+  <div *ngIf="activeView === 'hotels'" class="space-y-3">
+    <button class="w-full btn-primary py-3 rounded-full font-extrabold" (click)="openAddHotel()">+ 新增住宿</button>
+
+    <div *ngIf="hotels.length === 0" class="text-center py-8 text-gray-300">
+      <div class="text-4xl mb-2">🏨</div>
+      <div class="text-sm">尚未新增住宿資訊</div>
+    </div>
+
+    <div *ngFor="let h of hotels" class="card bg-white p-4">
+      <div class="flex items-start justify-between gap-2">
+        <div class="flex-1 min-w-0">
+          <div class="font-bold text-[#1A1A1A]">{{ h.name }}</div>
+          <div class="text-xs text-gray-400 mt-1">
+            {{ h.checkIn }} ~ {{ h.checkOut }}（{{ nightCount(h.checkIn, h.checkOut) }} 晚）
+          </div>
+          <div *ngIf="h.address" class="text-xs text-gray-400 mt-0.5">📍 {{ h.address }}</div>
+          <div *ngIf="h.note" class="text-xs text-gray-400 mt-0.5">{{ h.note }}</div>
+        </div>
+        <div class="flex gap-1 shrink-0">
+          <a *ngIf="h.url" class="icon-btn" [href]="h.url" target="_blank" rel="noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+          <button class="icon-btn" (click)="openEditHotel(h)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+          </button>
+          <button class="icon-btn" (click)="deleteHotel(h.id)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL ══ -->
+<div *ngIf="modalOpen" class="fixed inset-0 z-[80] flex items-end sm:items-center justify-center">
+  <div class="absolute inset-0 bg-black/35" (click)="closeModal()"></div>
+  <div class="relative w-full max-w-md mx-auto rounded-t-3xl sm:rounded-3xl bg-white shadow-[0_30px_90px_-35px_rgba(0,0,0,0.55)] border border-gray-200 p-5 sm:p-6 max-h-[90vh] overflow-y-auto"
+    (click)="$event.stopPropagation()">
+
+    <div class="flex items-start justify-between">
+      <div>
+        <div class="text-xs uppercase tracking-widest opacity-60">{{ modalType === 'flight' ? 'Flight' : 'Hotel' }}</div>
+        <div class="text-2xl h2 mt-1">{{ editingId ? '編輯' : '新增' }}{{ modalType === 'flight' ? '航班' : '住宿' }}</div>
+      </div>
+      <button class="btn-ghost w-9 h-9 flex items-center justify-center rounded-full" (click)="closeModal()">
+        <svg class="w-5 h-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Flight form -->
+    <div *ngIf="modalType === 'flight'" class="mt-5 space-y-4">
+      <div>
+        <div class="text-sm font-bold text-[#2E2E2E] mb-1">方向</div>
+        <div class="flex gap-2">
+          <button class="px-4 py-2 rounded-full text-sm font-bold border transition"
+            [style.background]="fDirection === 'outbound' ? '#FF5A5F' : 'var(--bg-card)'"
+            [style.color]="fDirection === 'outbound' ? 'white' : 'var(--text-primary)'"
+            [style.borderColor]="fDirection === 'outbound' ? '#FF5A5F' : 'var(--border-card)'"
+            (click)="fDirection = 'outbound'">去程</button>
+          <button class="px-4 py-2 rounded-full text-sm font-bold border transition"
+            [style.background]="fDirection === 'return' ? '#FF5A5F' : 'var(--bg-card)'"
+            [style.color]="fDirection === 'return' ? 'white' : 'var(--text-primary)'"
+            [style.borderColor]="fDirection === 'return' ? '#FF5A5F' : 'var(--border-card)'"
+            (click)="fDirection = 'return'">回程</button>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <div class="flex-1">
+          <div class="text-sm font-bold text-[#2E2E2E] mb-1">航空公司</div>
+          <input class="card bg-white w-full px-4 py-3 text-sm" placeholder="例：ANA" [(ngModel)]="fAirline" />
+        </div>
+        <div class="flex-1">
+          <div class="text-sm font-bold text-[#2E2E2E] mb-1">航班號</div>
+          <input class="card bg-white w-full px-4 py-3 text-sm" placeholder="例：NH852" [(ngModel)]="fFlightNo" />
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <div class="flex-1">
+          <div class="text-sm font-bold text-[#2E2E2E] mb-1">出發機場</div>
+          <input class="card bg-white w-full px-4 py-3 text-sm" placeholder="例：TPE" [(ngModel)]="fDepartAirport" />
+        </div>
+        <div class="flex-1">
+          <div class="text-sm font-bold text-[#2E2E2E] mb-1">抵達機場</div>
+          <input class="card bg-white w-full px-4 py-3 text-sm" placeholder="例：NRT" [(ngModel)]="fArriveAirport" />
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <div class="flex-1">
+          <div class="text-sm font-bold text-[#2E2E2E] mb-1">起飛時間</div>
+          <input class="card bg-white w-full px-4 py-3 text-sm" type="datetime-local" [(ngModel)]="fDeparture" />
+        </div>
+        <div class="flex-1">
+          <div class="text-sm font-bold text-[#2E2E2E] mb-1">降落時間</div>
+          <input class="card bg-white w-full px-4 py-3 text-sm" type="datetime-local" [(ngModel)]="fArrival" />
+        </div>
+      </div>
+      <div>
+        <div class="text-sm font-bold text-[#2E2E2E] mb-1">備註</div>
+        <input class="card bg-white w-full px-4 py-3 text-sm" placeholder="選填" [(ngModel)]="fNote" />
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button class="btn-ghost w-1/3 py-3" (click)="closeModal()">取消</button>
+        <button class="btn-primary w-2/3 py-3" [style.opacity]="canSubmitFlight ? '1' : '0.5'" (click)="submitFlight()">
+          {{ editingId ? '儲存' : '新增' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Hotel form -->
+    <div *ngIf="modalType === 'hotel'" class="mt-5 space-y-4">
+      <div>
+        <div class="text-sm font-bold text-[#2E2E2E] mb-1">飯店名稱</div>
+        <input class="card bg-white w-full px-4 py-3 text-sm" placeholder="例：東京灣希爾頓" [(ngModel)]="hName" />
+      </div>
+      <div class="flex gap-2">
+        <div class="flex-1">
+          <div class="text-sm font-bold text-[#2E2E2E] mb-1">入住日期</div>
+          <input class="card bg-white w-full px-4 py-3 text-sm" type="date" [(ngModel)]="hCheckIn" />
+        </div>
+        <div class="flex-1">
+          <div class="text-sm font-bold text-[#2E2E2E] mb-1">退房日期</div>
+          <input class="card bg-white w-full px-4 py-3 text-sm" type="date" [(ngModel)]="hCheckOut" />
+        </div>
+      </div>
+      <div>
+        <div class="text-sm font-bold text-[#2E2E2E] mb-1">地址</div>
+        <input class="card bg-white w-full px-4 py-3 text-sm" placeholder="選填" [(ngModel)]="hAddress" />
+      </div>
+      <div>
+        <div class="text-sm font-bold text-[#2E2E2E] mb-1">訂房連結</div>
+        <input class="card bg-white w-full px-4 py-3 text-sm" placeholder="選填" [(ngModel)]="hUrl" />
+      </div>
+      <div>
+        <div class="text-sm font-bold text-[#2E2E2E] mb-1">備註</div>
+        <input class="card bg-white w-full px-4 py-3 text-sm" placeholder="選填" [(ngModel)]="hNote" />
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button class="btn-ghost w-1/3 py-3" (click)="closeModal()">取消</button>
+        <button class="btn-primary w-2/3 py-3" [style.opacity]="canSubmitHotel ? '1' : '0.5'" (click)="submitHotel()">
+          {{ editingId ? '儲存' : '新增' }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

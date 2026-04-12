@@ -39,16 +39,16 @@
   <div class="flex gap-2">
     <button
       class="px-4 py-2 rounded-full text-sm font-bold border transition"
-      [style.background]="activeView === 'expenses' ? '#FF5A5F' : 'white'"
-      [style.color]="activeView === 'expenses' ? 'white' : '#2E2E2E'"
-      [style.borderColor]="activeView === 'expenses' ? '#FF5A5F' : '#d1d5db'"
+      [style.background]="activeView === 'expenses' ? '#FF5A5F' : 'var(--bg-card)'"
+      [style.color]="activeView === 'expenses' ? 'white' : 'var(--text-primary)'"
+      [style.borderColor]="activeView === 'expenses' ? '#FF5A5F' : 'var(--border-card)'"
       (click)="activeView = 'expenses'"
     >費用</button>
     <button
       class="px-4 py-2 rounded-full text-sm font-bold border transition"
-      [style.background]="activeView === 'settlement' ? '#FF5A5F' : 'white'"
-      [style.color]="activeView === 'settlement' ? 'white' : '#2E2E2E'"
-      [style.borderColor]="activeView === 'settlement' ? '#FF5A5F' : '#d1d5db'"
+      [style.background]="activeView === 'settlement' ? '#FF5A5F' : 'var(--bg-card)'"
+      [style.color]="activeView === 'settlement' ? 'white' : 'var(--text-primary)'"
+      [style.borderColor]="activeView === 'settlement' ? '#FF5A5F' : 'var(--border-card)'"
       (click)="activeView = 'settlement'"
     >結算</button>
   </div>
@@ -138,7 +138,7 @@
       *ngFor="let s of settlements"
       class="card p-4 flex items-center gap-4 transition"
       [style.opacity]="isSettled(s.from, s.to) ? '0.45' : '1'"
-      [style.background]="isSettled(s.from, s.to) ? '#f9fafb' : 'white'"
+      [style.background]="isSettled(s.from, s.to) ? 'var(--bg-hover)' : 'var(--bg-card)'"
     >
       <!-- 勾選框 -->
       <input

@@ -2,13 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== Theme Variables ===== */
+:root {
+  --bg-app: #F5F5F5;
+  --bg-card: #fff;
+  --bg-header: #fff;
+  --bg-nav: #fff;
+  --text-primary: #1A1A1A;
+  --text-secondary: #888;
+  --text-muted: #ADADAD;
+  --border-light: #EDEDED;
+  --border-card: #f3f4f6; /* gray-100 */
+  --bg-input: #fff;
+  --bg-hover: #f9fafb;
+  --shadow-card: 0 2px 12px -4px rgba(0,0,0,0.10);
+}
+
+[data-theme="dark"] {
+  --bg-app: #121212;
+  --bg-card: #1E1E1E;
+  --bg-header: #1A1A1A;
+  --bg-nav: #1A1A1A;
+  --text-primary: #E8E8E8;
+  --text-secondary: #999;
+  --text-muted: #666;
+  --border-light: #2A2A2A;
+  --border-card: #2A2A2A;
+  --bg-input: #252525;
+  --bg-hover: #2A2A2A;
+  --shadow-card: 0 2px 12px -4px rgba(0,0,0,0.4);
+}
+
 /* ===== Base ===== */
 html, body {
   height: 100%;
-  background: #F5F5F5;
+  background: var(--bg-app);
 }
 body {
-  @apply text-[#1A1A1A];
+  color: var(--text-primary);
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
     "Apple Color Emoji", "Segoe UI Emoji";
 }
@@ -20,14 +51,14 @@ body {
   height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: #F5F5F5;
+  background: var(--bg-app);
   position: relative;
 }
 
 .app-header {
-  background: #fff;
+  background: var(--bg-header);
   padding: 20px 20px;
-  border-bottom: 1px solid #EDEDED;
+  border-bottom: 1px solid var(--border-light);
   flex-shrink: 0;
   position: sticky;
   top: 0;
@@ -43,8 +74,8 @@ body {
 
 /* ===== Bottom Navigation ===== */
 .app-nav {
-  background: #fff;
-  border-top: 1px solid #EDEDED;
+  background: var(--bg-nav);
+  border-top: 1px solid var(--border-light);
   display: flex;
   flex-shrink: 0;
   padding-bottom: env(safe-area-inset-bottom, 0);
@@ -57,7 +88,7 @@ body {
   align-items: center;
   gap: 3px;
   padding: 10px 4px 12px;
-  color: #ADADAD;
+  color: var(--text-muted);
   transition: color 0.15s;
   cursor: pointer;
   border: none;
@@ -95,7 +126,7 @@ body {
   padding: 10px 16px;
   font-size: 13px;
   font-weight: 700;
-  color: #ADADAD;
+  color: var(--text-muted);
   border-bottom: 2px solid transparent;
   background: none;
   border-top: none;
@@ -111,13 +142,15 @@ body {
 }
 
 /* ===== Typography ===== */
-.h1 { @apply font-extrabold text-[#1A1A1A]; }
-.h2 { @apply font-extrabold text-[#1A1A1A]; }
+.h1 { font-weight: 800; color: var(--text-primary); }
+.h2 { font-weight: 800; color: var(--text-primary); }
 
 /* ===== Card / Buttons ===== */
 .card {
-  @apply rounded-2xl border border-gray-100
-         shadow-[0_2px_12px_-4px_rgba(0,0,0,0.10)];
+  @apply rounded-2xl;
+  border: 1px solid var(--border-card);
+  box-shadow: var(--shadow-card);
+  background: var(--bg-card);
 }
 
 .btn-primary {
@@ -129,19 +162,21 @@ body {
 }
 
 .btn-ghost {
-  @apply bg-white text-[#1A1A1A] font-bold
-         border border-gray-200
-         rounded-full
-         hover:bg-gray-50 active:scale-[0.99]
-         transition;
+  @apply font-bold rounded-full active:scale-[0.99] transition;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-card);
 }
+.btn-ghost:hover { background: var(--bg-hover); }
 
 /* ===== Icon button ===== */
 .icon-btn {
-  @apply w-8 h-8 rounded-full border border-gray-200 bg-white
-         flex items-center justify-center
-         hover:bg-gray-50 active:scale-[0.98] transition;
+  @apply w-8 h-8 rounded-full flex items-center justify-center active:scale-[0.98] transition;
+  border: 1px solid var(--border-card);
+  background: var(--bg-card);
+  color: var(--text-secondary);
 }
+.icon-btn:hover { background: var(--bg-hover); }
 .icon-btn svg { width: 15px; height: 15px; }
 
 /* ===== Japanese font ===== */
@@ -174,6 +209,112 @@ body {
   to   { opacity: 1; transform: translate(-50%, 0); }
 }
 .animate-slide-up { animation: slide-up 0.2s ease-out; }
+
+/* ===== Dark mode overrides ===== */
+/* Use attribute selectors to catch Tailwind classes regardless of build output */
+[data-theme="dark"] {
+  /* All elements with bg-white class */
+  [class*="bg-white"] {
+    background-color: var(--bg-card) !important;
+  }
+  /* bg-gray shades */
+  [class*="bg-gray-50"] { background-color: var(--bg-hover) !important; }
+  [class*="bg-gray-100"] { background-color: var(--bg-input) !important; }
+
+  /* Border colors */
+  [class*="border-gray-100"],
+  [class*="border-gray-200"] {
+    border-color: var(--border-card) !important;
+  }
+
+  /* Text colors */
+  [class*="text-gray-300"] { color: var(--text-muted) !important; }
+  [class*="text-gray-400"] { color: var(--text-secondary) !important; }
+  [class*="text-gray-500"] { color: var(--text-secondary) !important; }
+
+  /* Hardcoded hex text */
+  [class*="text-[#1A1A1A]"],
+  [class*="text-[#2E2E2E]"] {
+    color: var(--text-primary) !important;
+  }
+
+  /* Shadow */
+  [class*="shadow-sm"],
+  [class*="shadow-["] {
+    box-shadow: var(--shadow-card) !important;
+  }
+
+  /* Forms */
+  input, select, textarea {
+    background-color: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-card) !important;
+  }
+  input::placeholder, textarea::placeholder {
+    color: var(--text-muted) !important;
+  }
+
+  /* Modals / bottom sheets */
+  [class*="bg-white"][class*="rounded-3xl"],
+  [class*="bg-white"][class*="rounded-t-3xl"] {
+    background-color: var(--bg-card) !important;
+  }
+
+  /* opacity-60/50 text readability */
+  [class*="opacity-60"] { opacity: 0.7 !important; }
+  [class*="opacity-50"] { opacity: 0.65 !important; }
+
+  /* Hover states */
+  [class*="hover:bg-gray-50"]:hover,
+  [class*="hover:bg-gray-100"]:hover {
+    background-color: var(--bg-hover) !important;
+  }
+
+  /* Split sub-nav pill borders in dark */
+  [style*="background: white"],
+  [style*="background:white"] {
+    background: var(--bg-card) !important;
+  }
+
+  /* Itinerary event cards */
+  .event-list > div {
+    background: var(--bg-card) !important;
+    border-color: var(--border-card) !important;
+  }
+
+  /* Checklist items */
+  [class*="rounded-2xl"][class*="border"][class*="p-4"] {
+    background: var(--bg-card) !important;
+    border-color: var(--border-card) !important;
+  }
+
+  /* Ledger calculator keys */
+  .grid button[class*="card"] {
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+  }
+
+  /* Date pills */
+  button[class*="rounded-2xl"][class*="border"] {
+    border-color: var(--border-card) !important;
+  }
+
+  /* Search input */
+  input[class*="rounded-full"] {
+    background-color: var(--bg-input) !important;
+    border-color: var(--border-card) !important;
+  }
+
+  /* Offline banner */
+  [class*="bg-gray-700"] {
+    background-color: #2A2A2A !important;
+  }
+
+  /* Undo snackbar */
+  [class*="bg-[#323232]"] {
+    background-color: #2A2A2A !important;
+  }
+}
 
 /* ===== Scrollbar helper ===== */
 .no-scrollbar::-webkit-scrollbar { display: none; }

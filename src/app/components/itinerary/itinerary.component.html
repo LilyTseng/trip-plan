@@ -1,16 +1,61 @@
+<!-- Search bar -->
+<div class="mb-3">
+  <div class="flex items-center gap-2">
+    <div class="relative flex-1">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input
+        class="w-full pl-9 pr-8 py-2.5 rounded-full bg-white border border-gray-200 text-sm placeholder-gray-400 focus:outline-none focus:border-[#FF5A5F] transition"
+        placeholder="搜尋行程..."
+        [(ngModel)]="searchQuery"
+        (focus)="searchOpen = true"
+      />
+      <button *ngIf="searchQuery"
+        class="absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs"
+        (click)="searchQuery = ''; searchOpen = false">×</button>
+    </div>
+  </div>
+
+  <!-- Search results -->
+  <div *ngIf="searchOpen && searchQuery && searchResults.length > 0"
+    class="mt-2 bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden max-h-64 overflow-y-auto">
+    <div *ngFor="let r of searchResults"
+      class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition cursor-pointer border-b border-gray-50 last:border-0"
+      (click)="goToSearchResult(r.dateKey)">
+      <span class="text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-full shrink-0"
+        [style.background]="r.event.type === 'FOOD' ? '#FFF0EB' : r.event.type === 'PLAN' ? '#EBF1FF' : '#FFEBEC'"
+        [style.color]="r.event.type === 'FOOD' ? '#FF6B35' : r.event.type === 'PLAN' ? '#4A7AFF' : '#FF5A5F'">
+        {{ r.event.type }}
+      </span>
+      <div class="min-w-0 flex-1">
+        <div class="text-sm font-bold text-[#1A1A1A] truncate">{{ r.event.title }}</div>
+        <div class="text-[11px] text-gray-400">{{ r.dateLabel }} · {{ r.event.time }}</div>
+      </div>
+      <svg class="w-4 h-4 text-gray-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+    </div>
+  </div>
+  <div *ngIf="searchOpen && searchQuery && searchResults.length === 0"
+    class="mt-2 text-center py-4 text-sm text-gray-400">
+    找不到符合「{{ searchQuery }}」的行程
+  </div>
+</div>
+
 <!-- Date pills -->
 <div class="flex overflow-x-auto pb-2 gap-2 no-scrollbar">
   <button
     *ngFor="let d of dates"
     class="flex-shrink-0 px-3 py-2 rounded-2xl text-center border transition min-w-[52px]"
-    [style.background]="d === activeDate ? '#FF5A5F' : '#fff'"
-    [style.color]="d === activeDate ? '#fff' : '#888'"
-    [style.borderColor]="d === activeDate ? '#FF5A5F' : '#E5E5E5'"
+    [style.background]="d === activeDate ? '#FF5A5F' : 'var(--bg-card)'"
+    [style.color]="d === activeDate ? '#fff' : 'var(--text-secondary)'"
+    [style.borderColor]="d === activeDate ? '#FF5A5F' : 'var(--border-card)'"
     (click)="selectDate(d)"
   >
     <div class="text-[15px] font-extrabold leading-tight">{{ formatDate(d).split('（')[0] }}</div>
     <div class="text-[10px] font-medium leading-tight mt-0.5"
-      [style.color]="d === activeDate ? 'rgba(255,255,255,0.7)' : '#bbb'">
+      [style.color]="d === activeDate ? 'rgba(255,255,255,0.7)' : 'var(--text-muted)'">
       {{ formatDate(d).split('（')[1]?.replace('）','') }}
     </div>
     <div *ngIf="dayExpense(d) > 0" class="text-[9px] font-bold leading-tight mt-0.5"
